@@ -1,0 +1,216 @@
+*{
+    margin:0;
+  padding:0;
+  box-sizing:border-box;
+font-family: 'Times New Roman', Times, serif;
+scroll-behavior: smooth;
+
+}
+body{
+    background-color: #111111;
+    background-image:
+        linear-gradient(#1c1b1b 1px, transparent 1px),
+        linear-gradient(90deg, #1c1b1b 1px, transparent 1px);
+        background-size: 40px 40px;
+}
+
+
+.navbar{
+  background: rgba(13, 13, 13, 0.15);
+    backdrop-filter: blur(100px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px;
+    color: white;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 50px;
+  
+}
+
+.logo-section{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.logo-section h2{
+  margin:0;
+  font-size:24px;
+  
+}
+
+.navbar ul{
+  display:flex;
+  list-style:none;
+  gap:30px;
+  margin:0;
+  padding:0;
+}
+
+.navbar ul li{
+  cursor:pointer;
+  transition:0.3s;
+  font-size: 20px;
+  
+}
+
+.navbar ul li:hover{
+  color:#ff6600;
+}
+
+.navbar img{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  object-fit:cover;
+  transition:transform 0.3s ease;
+}
+
+.navbar img:hover{
+  transform:scale(1.05);
+}
+.navbar button{
+    padding:12px 30px;
+  border:none;
+  background:#ff6600;
+  color:white;
+  border-radius:5px;
+  cursor:pointer;
+
+}
+
+.hero {
+   
+    background-image:linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(https://images.unsplash.com/photo-1534438327276-14e5300c3a48);
+    background-size: cover;
+    background-position: center;
+    background-repeat:no-repeat;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:left;
+  color:white;
+    text-align: center;
+}
+
+
+
+.hero h1 {
+    color:white;
+    font-size: 75px;
+    
+        animation: slideLeft 2s ease-out;
+}
+
+@keyframes slideLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.hero p{
+  margin:20px 0;
+  font-size:25px;
+  color: white;
+  
+  animation: slideLeft 3s ease-out;
+}
+
+
+.about h2{
+  margin-bottom: 20px;
+  font-size: 40px;
+}
+.about{
+  padding:60px;
+  text-align:center;
+ justify-content: center;
+  color: white;
+  
+  
+  }
+.about p{
+  font-size: 20px;
+  line-height: 30px;
+  gap: 10px;
+  text-align: center;
+  margin: 50px 100px 100px 50px;
+
+}
+.features{
+  padding:80px 50px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:25px;
+  
+}
+.feahead{
+ justify-content: center;
+ text-align: center;
+ display: flex;
+ color: white;
+ padding: 10px;
+ font-size: 30px;
+
+}
+
+
+.card{
+  background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+  padding:25px;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+  transition:all 0.3s ease;
+  overflow:hidden;
+  color: white;
+}
+
+.card:hover{
+  transform:translateY(-10px);
+  box-shadow:0 10px 25px rgba(255,102,0,0.5);
+}
+
+.card:hover img{
+  transform:scale(1.1);
+}
+
+.card img{
+  width:100%;
+  height:200px;
+  object-fit:cover;
+  border-radius:15px;
+  transition:transform 0.4s ease;
+}
+
+.cardtext{
+    padding: 10px;
+    margin-top: 10px;
+}
+.cardtext h3{
+    text-align: center;
+    padding: 10px;
+}
+.cardtext p{
+    line-height: 25px;
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 1s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
