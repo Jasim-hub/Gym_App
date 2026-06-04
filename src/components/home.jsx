@@ -1,5 +1,5 @@
 import React from 'react';
-import './loging.css';
+import './home.css';
 import logo from './assets/logo.jpeg';
 import park from './assets/park.jpeg';
 import time from './assets/time.jpeg';
@@ -7,9 +7,10 @@ import trainer from './assets/professional.jpeg';
 import equments from './assets/equments.jpeg';
 import locker from './assets/locker.jpeg';
 import diet from './assets/dite.jpeg';
+import zumba from './assets/zumba.jpeg';
 import yoga from './assets/yoga.jpeg';
 import { useEffect } from "react";
-function Loging() {
+function Home() {
     useEffect(() => {
   const reveal = () => {
     const elements = document.querySelectorAll(".reveal");
@@ -37,15 +38,15 @@ function Loging() {
         <h2>Jasim</h2>
         </div>
         <ul>
-          <li>Home</li>
+          <li><a href="#home">Home</a></li>
           <li>Attendance</li>
           <li>Fees</li>
-          <li>Contact</li>
+          <li><a href="#contact">Contact</a></li>
         </ul>
         
       </nav>
 
-      <section className="hero">
+      <section className="hero" id="home">
         <div>
         
           <h1>Infinity Wellness Hub</h1>
@@ -120,15 +121,74 @@ function Loging() {
           </div>
         </div>
         <div className="card reveal">
-            <img src={trainer}/>
+            <img src={zumba}/>
             <div className="cardtext">
-          <h3>Expert Trainers</h3>
-          <p>Train with experienced and dedicated professionals committed to your success.</p>
+          <h3>Zumba Dance</h3>
+          <p>Zumba is a fun dance workout that improves fitness and burns calories through energetic music and simple moves.</p>
           </div>
         </div>
       </section>
+      <section className="contact" id="contact">
+        <h3 className="reveal">HIT US UP ANYTIME</h3>
+
+        <div className="overlay">
+           
+<div className="img-box">
+
+
+         <div className="form-box reveal">
+      <h2>Contact Us</h2>
+
+      <div className="row">
+        <input type="text" placeholder="First Name"/>
+        <input type="text" placeholder="Last Name"/>
+      </div>
+
+      <div className="row">
+        <input type="text" placeholder="Phone Number"/>
+        <input type="email" placeholder="abc@gmail.com"/>
+      </div>
+
+      <textarea placeholder="Leave us a message..."></textarea>
+      <button>Submit</button>
+    </div>
+ </div>
+   </div>
+   </section>
+<footer className="footer">
+  <div className="footer-container">
+
+    <div className="footer-box">
+      <h3>Infinity Wellness Hub</h3>
+      <p>Transform your body and mind with expert training and modern fitness programs.</p>
+    </div>
+
+    <div className="footer-box">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#">Classes</a></li>
+        <li><a href="#">Trainers</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+
+    <div className="footer-box">
+      <h3>Contact</h3>
+      <p>📍 Trivandrum, Kerala</p>
+      <p>📞 +91 9876543210</p>
+      <p>✉ InfinityWellnessHub@gym.com</p>
+    </div>
+
+  </div>
+
+  <div className="footer-bottom">
+    <p>© 2026 Infinity Wellness Hub. All Rights Reserved.</p>
+  </div>
+</footer>
+  
     </div>
   );
 }
 
-export default Loging;
+export default Home;
