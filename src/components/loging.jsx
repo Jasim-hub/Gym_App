@@ -11,9 +11,7 @@ const handleLogin = () => {
   navigate("/home");
 };
 const handleRegister = () => {
-    // Save registration data here
-
-    // Switch back to Login page
+    
     setIsRegister(false);
 
     

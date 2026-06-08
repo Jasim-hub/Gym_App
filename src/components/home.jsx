@@ -10,6 +10,7 @@ import diet from './assets/dite.jpeg';
 import zumba from './assets/zumba.jpeg';
 import yoga from './assets/yoga.jpeg';
 import { useEffect } from "react";
+import { Link } from 'react-router-dom';
 function Home() {
     useEffect(() => {
   const reveal = () => {
@@ -32,6 +33,7 @@ function Home() {
 }, []);
   return (
     <div>
+      
       <nav className="navbar">
         <div className="logo-section">
         <img src={logo}/>
@@ -39,8 +41,8 @@ function Home() {
         </div>
         <ul>
           <li><a href="#home">Home</a></li>
-          <li>Attendance</li>
-          <li>Fees</li>
+          <li><a href="/attendence">Attendance</a></li>
+          <li><a href="/fee">Fees</a></li>
           <li><a href="#contact">Contact</a></li>
         </ul>
         
