@@ -16,9 +16,6 @@ function FeeManagement() {
   const handleRenw = () =>{
     navigation ("/fee")
   };
-useEffect(() => {
-  setShowFee(true);
-}, []);
 
 
   return (
@@ -55,9 +52,13 @@ useEffect(() => {
     setShowFee(false);
 
     setTimeout(() => {
-      document.getElementById("fees").scrollIntoView({
-        behavior: "smooth"
-      });
+      const feesSection = document.getElementById("fees");
+
+      if (feesSection) {
+        feesSection.scrollIntoView({
+          behavior: "smooth",
+        });
+      }
     }, 100);
   }}>
         Renew Plan
@@ -125,12 +126,18 @@ useEffect(() => {
                   <button>GET STARTED</button>
                 </div>
                 </section>
-                <footer className="footer">
+<footer className="footer">
   <div className="footer-container">
 
     <div className="footer-box">
       <h3>Infinity Wellness Hub</h3>
       <p>Transform your body and mind with expert training and modern fitness programs.</p>
+      <div className="footer-logo">
+      <i className="fa-brands fa-whatsapp"></i>
+      <i className="fa-brands fa-instagram"></i>
+      <i className="fa-brands fa-youtube"></i>
+      <i className="fa-brands fa-facebook"></i>
+      </div>
     </div>
 
     <div className="footer-box">

@@ -8,6 +8,9 @@ import lunges from './assets/Lunges.jpeg'
 import legpress from './assets/leg_press.jpeg'
 import benchpress from './assets/bench_press.jpeg'
 import squat from './assets/squat.jpeg'
+
+
+
 function AttendenceManagement() {
  const [showAttendance, setShowAttendance] = useState(false);
   const [inTime, setInTime] = useState("");
@@ -27,9 +30,7 @@ function AttendenceManagement() {
     setShowAttendance(true);
   }
 }, []);
-useEffect(() => {
-  setShowAttendance(true);
-}, []);
+
 
   const handleCheckIn = () => {
     const time = new Date().toLocaleTimeString();
@@ -78,7 +79,7 @@ const day = new Date().toLocaleDateString("en-US", {
     ],
   },
 
-  Thursday: {
+  Tuesday: {
     title: "Chest Day",
     exercises: [
       {
@@ -100,7 +101,10 @@ const day = new Date().toLocaleDateString("en-US", {
     ],
   },
 };
-const workout = workouts[day];
+const workout = workouts[day] || {
+  title: "Rest Day",
+  exercises: [],
+};
     return (<>
 <nav className="navbar">
         <div className="logo-section">
@@ -170,7 +174,7 @@ const workout = workouts[day];
         </div>
       )}
       <section className="workout-section">
-    <h2>Today's Fitness Mission: <span className="sptitle">{workout.title}</span></h2>
+    <h2>Today's Fitness Mission: {workout.title}</h2>
 
     <div className="exercise-grid">
       {workout.exercises.map((exercise, index) => (
@@ -186,6 +190,43 @@ const workout = workouts[day];
       ))}
     </div>
   </section>
+  <footer className="footer">
+  <div className="footer-container">
+
+    <div className="footer-box">
+      <h3>Infinity Wellness Hub</h3>
+      <p>Transform your body and mind with expert training and modern fitness programs.</p>
+      <div className="footer-logo">
+      <i className="fa-brands fa-whatsapp"></i>
+      <i className="fa-brands fa-instagram"></i>
+      <i className="fa-brands fa-youtube"></i>
+      <i className="fa-brands fa-facebook"></i>
+      </div>
+    </div>
+
+    <div className="footer-box">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#">Classes</a></li>
+        <li><a href="#">Trainers</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+
+    <div className="footer-box">
+      <h3>Contact</h3>
+      <p>📍 Trivandrum, Kerala</p>
+      <p>📞 +91 9876543210</p>
+      <p>✉ InfinityWellnessHub@gym.com</p>
+    </div>
+
+  </div>
+
+  <div className="footer-bottom">
+    <p>© 2026 Infinity Wellness Hub. All Rights Reserved.</p>
+  </div>
+</footer>
       </>
     )
 

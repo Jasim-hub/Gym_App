@@ -251,6 +251,114 @@ height: 50px;
   opacity: 1;
   transform: translateY(0);
 }
+
+.trainer-second{
+  text-align: center;
+  background: linear-gradient(135deg, #fa6807, #000000);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-top: 50px;
+  font-size: 2.5rem;
+  margin-bottom: 50px;
+  
+}
+
+.trainer-card{
+    width: 80%;
+  max-width: 1200px;
+  margin: 80px auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px;
+
+  padding: 40px;
+  border-radius: 20px;
+
+ background: linear-gradient(135deg, #000000, #c9c8c8);
+    backdrop-filter: blur(20px);
+  color: white;
+
+  overflow: hidden;
+}
+.trainer-content{
+  flex:1;
+  text-align: left;
+  animation: slideLeft1 1s ease;
+  
+}
+.trainer-content h2{
+  font-size: 30px;
+  color: #fa6600;
+  }
+.trainer-content h3{
+  font-size: 17px;
+  background: linear-gradient(135deg, #060606, #f23f03);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-top: 5px;
+
+}
+.trainer-content p{
+  font-size: 15px;
+  line-height: 20px;
+  margin-top: 10px;
+  text-align: left;
+  max-width: 300px;
+}
+@keyframes slideLeft1{
+  from{
+    opacity:0;
+    transform:translateX(100px);
+  }
+  to{
+    opacity:1;
+    transform:translateX(0);
+  }
+}
+.trainer-image img{
+  animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(20px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+.progress-bar{
+  height:4px;
+  background:#ff6600;
+  animation:progress 4s linear infinite;
+}
+
+@keyframes progress{
+  from{
+    width:0;
+  }
+  to{
+    width:100%;
+  }
+}
+.trainer-image{
+  flex:1;
+}
+.trainer-image img{
+  width:100%;
+  max-width:450px;
+  height:350px;
+  object-fit:cover;
+  border-radius:20px;
+}
+
+
 .contact{
     width: 100%;
   height: 100vh;
@@ -388,6 +496,17 @@ button:hover{
     margin-top: 40px;
     color:#ff6600;
 }
+.footer-logo{
+  text-align: center;
+  padding: 15px;
+  
+}
+.footer-logo i{
+  gap: 20px;
+  font-size: 20px;
+  color:white;
+  margin: 5px;
+}
 a{
     text-decoration: none; 
     color: white;          
@@ -410,7 +529,7 @@ a:hover{
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-top: 130px;
+  margin-top: 100px;
   font-size: 2.5rem;
   margin-bottom: 50px;
   animation: slideLeft 1.5s ease-out;
@@ -655,7 +774,7 @@ padding:80px 50px;
   transform:scale(1.1);
 }
 
-.exercise-cardfee-card img{
+.exercise-card img{
   width:100%;
   height:200px;
   object-fit:cover;
@@ -667,11 +786,29 @@ padding:80px 50px;
   padding:20px;
   text-align: center;
   font-size: 20px;
-  color: #ff6600;
+  color: rgb(255, 102, 0);
 }
 
 .exercise-card p{
   padding:0 10px 15px;
   line-height: 25px;
   font-size: 16px;
+}
+.gender-select{
+  
+    padding: 12px 0;
+   background: linear-gradient(135deg, #ff6600, #ff8c42);
+    backdrop-filter: blur(20px);
+    border: none;
+    border-bottom: 1px solid #777;
+    color: #000000;
+    outline: none;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+.activity-card p{
+padding:0 10px 15px;
+    font-size: 20px;
+  color: white;
+  text-align: center;
 }

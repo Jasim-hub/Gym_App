@@ -3,7 +3,11 @@ import Home from './components/home'
 import Login from './components/loging'
 import FeeManagement from './components/fees';
 import AttendenceManagement from './components/attendence';
+import AdminDashboard from './components/admin_dhashbord';
+import AttendenceSummary from './components/attendence_summary';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import FeeSummary from './components/feessummary';
+import Activity from './components/Activity';
 function App() {
   
   return (
@@ -13,6 +17,10 @@ function App() {
     <Route path="/home" element={<Home />}/>
     <Route path="/fee" element={<FeeManagement />}/>
         <Route path="/attendence" element={<AttendenceManagement />}/>
+        <Route path="/admin" element={<AdminDashboard />}/>
+        <Route path="/attendencesummary" element={<AttendenceSummary />}/>
+        <Route path="/activity" element={<Activity />}/>
+        <Route path="/feessummary" element={<FeeSummary />}/>
   </Routes>
 </Router>
   

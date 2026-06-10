@@ -9,8 +9,9 @@ import locker from './assets/locker.jpeg';
 import diet from './assets/dite.jpeg';
 import zumba from './assets/zumba.jpeg';
 import yoga from './assets/yoga.jpeg';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 function Home() {
     useEffect(() => {
   const reveal = () => {
@@ -30,6 +31,36 @@ function Home() {
   reveal();
 
   return () => window.removeEventListener("scroll", reveal);
+}, []);
+// Trainer details
+const trainers = [
+  {
+    name: "Arjun Kumar",
+    role: "Fitness Coach",
+    desc: "Our certified trainers are dedicated to helping you achieve your fitness goals through personalized guidance and expert support.",
+    image: logo,
+  },
+  {
+    name: "Rahul Nair",
+    role: "Personal Trainer",
+    desc: "With years of experience in fitness and wellness, our trainers provide effective workout plans tailored to your needs.",
+    image: equments,
+  },
+  {
+    name: "Anjali Das",
+    role: "Yoga Instructor",
+    desc: "Whether you're a beginner or an advanced athlete, our trainers will motivate and guide you every step of your fitness journey.",
+    image: trainer,
+  },
+];
+const [current, setCurrent] = useState(0);
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrent((prev) => (prev + 1) % trainers.length);
+  }, 5000); // Change every 4 seconds
+
+  return () => clearInterval(interval);
 }, []);
   return (
     <div>
@@ -130,6 +161,27 @@ function Home() {
           </div>
         </div>
       </section>
+      <h2 className="trainer-second">Meet Our Expert Trainers</h2>
+      <section className="trainer-section">
+  <div className="trainer-card reveal" >
+
+    <div className="trainer-content" key={current}>
+      <h2>{trainers[current].name}</h2>
+      <h3>{trainers[current].role}</h3>
+      <p>{trainers[current].desc}</p>
+    </div>
+
+    <div className="trainer-image" key={`img-${current}`}>
+      <img
+        src={trainers[current].image}
+        alt={trainers[current].name}
+      />
+    </div>
+
+  </div>
+</section>
+
+      
       <section className="contact" id="contact">
         <h3 className="reveal">HIT US UP ANYTIME</h3>
 
@@ -163,6 +215,12 @@ function Home() {
     <div className="footer-box">
       <h3>Infinity Wellness Hub</h3>
       <p>Transform your body and mind with expert training and modern fitness programs.</p>
+      <div className="footer-logo">
+      <i className="fa-brands fa-whatsapp"></i>
+      <i className="fa-brands fa-instagram"></i>
+      <i className="fa-brands fa-youtube"></i>
+      <i className="fa-brands fa-facebook"></i>
+      </div>
     </div>
 
     <div className="footer-box">
