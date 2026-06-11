@@ -1,67 +1,34 @@
 import './admin.css';
 import logo from './assets/logo.jpeg';
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 import profileImage from './assets/logo.jpeg'
+import API from "./api";
+import { data } from 'react-router-dom';
 
 function AdminDashboard() {
+    const [member, setMember] = useState([]);
     const [showPopup, setShowPopup] = useState(false);
      const [showView, setShowView] = useState(false);
-    const [selectedMember, setSelectedMember] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
     const [search, setSearch] = useState("");
 
-const members = [
-  {
-    id: "M001",
-    name: "Jasim",
-    phone: "9876543210",
-    email:"jasim@gmail.com",
-    plan: "Premium",
-    status: "Active",
-    joined: "06-01-2026",
-    age:"30",
-    image: profileImage,
-  },
-  {
-    id: "M002",
-    name: "Roshin",
-    phone: "9876543210",
-    email:"jasim@gmail.com",
-    plan: "Premium",
-    status: "Active",
-    joined: "06-01-2026",
-    age:"30",
-    image: profileImage,
-  },
-  {
-    id: "M003",
-    name: "Sujith",
-    phone: "9876543210",
-    email:"jasim@gmail.com",
-    plan: "Premium",
-    status: "Active",
-    joined: "06-01-2026",
-    age:"30",
-    image: profileImage,
-  },
-  {
-    id: "M004",
-    name: "Najin",
-    phone: "9876543210",
-    email:"jasim@gmail.com",
-    plan: "Premium",
-    status: "Active",
-    joined: "06-01-2026",
-    age:"30",
-    image: profileImage,
-  },
- 
- 
-];
+useEffect(() => {
+  fetchMember();
+}, []);
 
+const fetchMember = async () => {
+  try {
+    const response = await API.get(`/members/`);
+   setMember(response.data);
 
-const filteredMembers = members.filter((member) =>
-  member.name.toLowerCase().includes(search.toLowerCase()) ||
-  member.phone.includes(search)
+  } catch (error) {
+    console.log(error);
+  }
+};
+console.log(setMember)
+const filteredMembers = member.filter((members) =>
+  members.name.toLowerCase().includes(search.toLowerCase()) ||
+  members.phone.includes(search)
 );
 
   return (
@@ -87,7 +54,7 @@ const filteredMembers = members.filter((member) =>
 
         <div className="dashboard-card">
           <h3>Total Members</h3>
-          <h2>150</h2>
+          <h2></h2>
         </div>
 
         <div className="dashboard-card">
@@ -135,13 +102,13 @@ const filteredMembers = members.filter((member) =>
     </thead>
 
     <tbody>
-        {filteredMembers.map((member) => ( 
-      <tr key={member.id}>
-        <td>{member.id}</td>
-        <td>{member.name}</td>
-        <td>{member.phone}</td>
+        {filteredMembers.map((members) => ( 
+      <tr key={members.user_id}>
+        <td>{members.user_id}</td>
+        <td>{members.name}</td>
+        <td>{members.phone}</td>
         <td>
-          <span className={
+          {/* <span className={
   member.plan === "Basic"
     ? "basic"
     : member.plan === "Premium"
@@ -149,23 +116,23 @@ const filteredMembers = members.filter((member) =>
     : "elite"
 }>
             {member.plan}
-          </span>
+          </span> */}
         </td>
-        <td>{member.joined}</td>
+        <td>{members.joined_date}</td>
         <td>
-         <span
+         {/* <span
     className={`status ${
       member.status === "Active"
-        ? "active"
+        ? "activation"
         : "inactive"
     }`}
   >
     {member.status}
-  </span>
+  </span> */}
         </td>
         <td>
           <button className="view-btn"  onClick={() => {
-    setSelectedMember(member);
+    setSelectedMember(members);
     setShowView(true);
   }}>
             View
@@ -213,7 +180,7 @@ const filteredMembers = members.filter((member) =>
     placeholder="Phone Number"
   />
 </div>
-<div className="age-gender-row">
+<div className="admin-age-gender-row">
    <input
       type="date"
       /><select className="gender-select">
@@ -263,19 +230,19 @@ const filteredMembers = members.filter((member) =>
       <h2>Member Details</h2>
 
       <img
-        src={selectedMember.image}
+        src={`http://127.0.0.1:8000${selectedMember.profile_image}`}
         alt={selectedMember.name}
         className="member-photo"
       />
 
-      <p><strong>ID:</strong> {selectedMember.id}</p>
+      <p><strong>ID:</strong> {selectedMember.user_id}</p>
       <p><strong>Name:</strong> {selectedMember.name}</p>
       <p><strong>Phone:</strong> {selectedMember.phone}</p>
       <p><strong>Email:</strong> {selectedMember.email}</p>
-      <p><strong>Age:</strong> {selectedMember.age}</p>
-      <p><strong>Plan:</strong> {selectedMember.plan}</p>
-      <p><strong>Status:</strong> {selectedMember.status}</p>
-      <p><strong>Joined:</strong> {selectedMember.joined}</p>
+      <p><strong>Date of Brith:</strong> {selectedMember.date_of_birth}</p>
+      <p><strong>Gender:</strong> {selectedMember.gender}</p>
+      {/* <p><strong>Status:</strong> {selectedMember.status}</p> */}
+      <p><strong>Joined:</strong> {selectedMember.joined_date}</p>
 
       <button
         className="save-btn"

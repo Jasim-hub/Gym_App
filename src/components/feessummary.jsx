@@ -129,7 +129,7 @@ const filteredMembers = FeeData.filter((member) =>
           <td><span
     className={`status ${
       member.Status === "Pay"
-        ? "active"
+        ? "activation"
         : "pending"
     }`}
   >

@@ -153,10 +153,16 @@
     border-bottom: 1px solid #777;
     color: white;
     outline: none;
-    margin-top: 10px;
+    margin-top:10px;
     margin-bottom: 20px;
 }
 
 .age-gender-row select option{
     color: black;
+}
+.error{
+  color:rgb(246, 0, 0);
+  font-size:16px;
+  margin-top:3px;
+  margin-bottom: 10px;
 }

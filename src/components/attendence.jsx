@@ -15,6 +15,9 @@ function AttendenceManagement() {
  const [showAttendance, setShowAttendance] = useState(false);
   const [inTime, setInTime] = useState("");
   const [outTime, setOutTime] = useState("");
+  const member = JSON.parse(
+  localStorage.getItem("member")
+);
 
   useEffect(() => {
   console.log("Component Loaded");
@@ -108,8 +111,8 @@ const workout = workouts[day] || {
     return (<>
 <nav className="navbar">
         <div className="logo-section">
-        <img src={logo}/>
-        <h2>Jasim</h2>
+        <img src={`http://127.0.0.1:8000${member.profile_image}`} alt='profile'/>
+        <h2>{member.name}</h2>
         </div>
         <ul>
           <li><a href="/home">Home</a></li>

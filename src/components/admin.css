@@ -220,7 +220,7 @@ height: 50px;
   border-radius:20px;
 }
 
-.active{
+.activation{
   background:rgba(0,255,100,0.15);
   color:#00ff66;
 }
@@ -362,14 +362,14 @@ position: fixed;
     cursor: pointer;
 }
 
-.age-gender-row{
+.admin-age-gender-row{
     display: flex;
     gap: 15px;
     margin-bottom: 10px;
     margin-top: 0px;
 }
 
-.age-gender-row input{
+.admin-age-gender-row input{
     flex: 1;
     padding: 12px 0;
     background: transparent;
@@ -378,7 +378,7 @@ position: fixed;
     color: white;
     outline: none;
 }
-.age-gender-row select{
+.admin-age-gender-row select{
     flex: 1;
     padding: 12px 0;
     background: transparent;
@@ -390,7 +390,7 @@ position: fixed;
     margin-bottom: 0px;
 }
 
-.age-gender-row select option{
+.admin-age-gender-row select option{
     color: black;
 }
 /* view member */

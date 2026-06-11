@@ -12,7 +12,16 @@ import yoga from './assets/yoga.jpeg';
 import { useEffect, useState } from "react";
 import { Link } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import API from './api';
+
+
+
 function Home() {
+const member = JSON.parse(
+  localStorage.getItem("member")
+);
+
+
     useEffect(() => {
   const reveal = () => {
     const elements = document.querySelectorAll(".reveal");
@@ -67,8 +76,8 @@ useEffect(() => {
       
       <nav className="navbar">
         <div className="logo-section">
-        <img src={logo}/>
-        <h2>Jasim</h2>
+        <img src={`http://127.0.0.1:8000${member.profile_image}`} alt='profile'/>
+        <h2>{member.name}</h2>
         </div>
         <ul>
           <li><a href="#home">Home</a></li>
@@ -161,7 +170,7 @@ useEffect(() => {
           </div>
         </div>
       </section>
-      <h2 className="trainer-second">Meet Our Expert Trainers</h2>
+      <h2 className="trainer-second reveal">Meet Our Expert Trainers</h2>
       <section className="trainer-section">
   <div className="trainer-card reveal" >
 
