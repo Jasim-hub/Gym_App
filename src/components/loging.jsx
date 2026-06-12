@@ -11,6 +11,8 @@ const [isRegister, setIsRegister] = useState(false);
 const [confirmPassword, setConfirmPassword] = useState("");
 const [showIdPopup, setShowIdPopup] = useState(false);
 const [newUserId, setNewUserId] = useState("");
+const [showAlert, setShowAlert] = useState(false);
+const [alertMessage, setAlertMessage] = useState("");
 const [loginData, setLoginData] = useState({
   user_id: "",
   password: "",
@@ -53,7 +55,8 @@ const handleLoginChange = (e) => {
 const handleRegister = async () => {
 for (const key in formData) {
     if (!formData[key]) {
-      alert(`${key.replace("_", " ")} is required`);
+      setAlertMessage(`${key.replace("_", " ")} is required`);
+setShowAlert(true);
       return;
     }
   }
@@ -90,13 +93,16 @@ setShowIdPopup(true);
   console.log(errors);
 
   if (errors?.email) {
-    alert("This email is already registered");
+     setAlertMessage("This email is already registered");
+setShowAlert(true);
   }
   else if (errors?.phone) {
-    alert("This phone number is already registered");
+        setAlertMessage("This phone number is already registered");
+setShowAlert(true);
   }
   else {
-    alert("Registration failed");
+        setAlertMessage("Registration failed");
+setShowAlert(true);
   }
 }
   
@@ -105,7 +111,8 @@ setShowIdPopup(true);
 const handleLogin = async () => {
 
   if (!loginData.user_id || !loginData.password) {
-    alert("Please enter User ID and Password");
+        setAlertMessage("Please enter User ID and Password");
+setShowAlert(true);
     return;
   }
 
@@ -119,18 +126,17 @@ localStorage.setItem(
   "member",
   JSON.stringify(response.data)
 );
-    alert(
-      `Welcome ${response.data.name}`
-    );
+   setAlertMessage(`Welcome ${response.data.name}`);
+setShowAlert(true);
 
     navigate("/home");
 
   } catch (error) {
 
-    alert(
-      error.response?.data?.message ||
-      "Login Failed"
-    );
+    
+    setAlertMessage(error.response?.data?.message ||
+      "Login Failed");
+setShowAlert(true);
 
   }
 };
@@ -201,7 +207,7 @@ localStorage.setItem(
         /></>)}
 
 
-
+{!isRegister && (<>
     <input type="text"
     placeholder="User Id" 
     name="user_id"
@@ -216,8 +222,8 @@ localStorage.setItem(
           placeholder="Password"
           value={loginData.password}
   onChange={handleLoginChange}
-        />
-
+        /></>
+)}
 
 
         {isRegister && (
@@ -276,6 +282,21 @@ localStorage.setItem(
       <h1>{newUserId}</h1>
 
       <button onClick={() => setShowIdPopup(false)}>
+        OK
+      </button>
+    </div>
+  </div>
+)}
+{showAlert && (
+  <div className="alert-overlay">
+    <div className="alert-card">
+      <h3>Notification</h3>
+
+      <p>{alertMessage}</p>
+
+      <button
+        onClick={() => setShowAlert(false)}
+      >
         OK
       </button>
     </div>

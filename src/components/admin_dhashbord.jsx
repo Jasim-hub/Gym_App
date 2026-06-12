@@ -11,6 +11,84 @@ function AdminDashboard() {
      const [showView, setShowView] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
     const [search, setSearch] = useState("");
+  const [showIdPopup, setShowIdPopup] = useState(false);
+const [newUserId, setNewUserId] = useState("");
+const [confirmPassword, setConfirmPassword] = useState("");
+    const [formData, setFormData] = useState({
+  name: "",
+  email: "",
+  countryCode: "",
+  phone: "",
+  date_of_birth: "",
+  gender: "",
+  password: "",
+  profile_image: null,
+});
+
+const fullPhone =
+  formData.countryCode + formData.phone;
+
+console.log(fullPhone);
+const handleChange = (e) => {
+  const { name, value } = e.target;
+
+  setFormData({
+    ...formData,
+    [name]: value,
+  });
+};
+
+const handleRegister = async () => {
+for (const key in formData) {
+    if (!formData[key]) {
+      alert(`${key.replace("_", " ")} is required`);
+      return;
+    }
+  }
+
+  if (formData.password !== confirmPassword) {
+    
+    return;
+  }
+   
+  const data = new FormData();
+
+  Object.keys(formData).forEach((key) => {
+    if (key !== "countryCode") {
+      data.append(key, formData[key]);
+    }
+  });
+  data.set(
+    "phone",
+    formData.countryCode + formData.phone
+  );
+
+  try {
+    const response = await API.post("/members/create/", data);
+    console.log(response.data);
+
+    setNewUserId(response.data.user_id);
+setShowIdPopup(true);
+    setShowPopup(false);
+  } 
+  catch (error) {
+
+  const errors = error.response?.data;
+
+  console.log(errors);
+
+  if (errors?.email) {
+    alert("This email is already registered");
+  }
+  else if (errors?.phone) {
+    alert("This phone number is already registered");
+  }
+  else {
+    alert("Registration failed");
+  }
+}
+  
+};
 
 useEffect(() => {
   fetchMember();
@@ -25,7 +103,7 @@ const fetchMember = async () => {
     console.log(error);
   }
 };
-console.log(setMember)
+    
 const filteredMembers = member.filter((members) =>
   members.name.toLowerCase().includes(search.toLowerCase()) ||
   members.phone.includes(search)
@@ -54,7 +132,7 @@ const filteredMembers = member.filter((members) =>
 
         <div className="dashboard-card">
           <h3>Total Members</h3>
-          <h2></h2>
+          <h2>{member.length}</h2>
         </div>
 
         <div className="dashboard-card">
@@ -134,6 +212,7 @@ const filteredMembers = member.filter((members) =>
           <button className="view-btn"  onClick={() => {
     setSelectedMember(members);
     setShowView(true);
+    console.log(selectedMember);
   }}>
             View
           </button>
@@ -161,13 +240,22 @@ const filteredMembers = member.filter((members) =>
       <input
         type="text"
         placeholder="Full Name"
+        name="name"
+            value={formData.name}
+             onChange={handleChange}
       />
 <input
           type="email"
           placeholder="Email Address"
+          name="email"
+            value={formData.email}
+             onChange={handleChange}
         />
       <div className="phone-group">
-  <select>
+  <select name="countryCode"
+            value={formData.countryCode}
+             onChange={handleChange}>
+    <option value=""></option>
     <option value="+91">🇮🇳 +91</option>
     <option value="+1">🇺🇸 +1</option>
     <option value="+44">🇬🇧 +44</option>
@@ -178,29 +266,47 @@ const filteredMembers = member.filter((members) =>
   <input
     type="tel"
     placeholder="Phone Number"
+    name="phone"
+            value={formData.phone}
+             onChange={handleChange}
   />
 </div>
 <div className="admin-age-gender-row">
    <input
       type="date"
-      /><select className="gender-select">
+      name="date_of_birth"
+            value={formData.date_of_birth}
+             onChange={handleChange}
+      /><select className="gender-select" name="gender"
+            value={formData.gender}
+             onChange={handleChange}>
       <option value="">Select Gender</option>
-      <option value="male">Male</option>
-      <option value="female">Female</option>
-      <option value="other">Other</option>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
     </select>
     </div>
     <input
           type="password"
           placeholder="Password"
+          name="password"
+            value={formData.password}
+             onChange={handleChange}
         />
         <input
             type="password"
             placeholder="Confirm Password"
+            name="confirmpassword"
+            value={confirmPassword}
+  onChange={(e) => setConfirmPassword(e.target.value)}
           />
           <div className="profile-upload">
-      <label>Profile Picture</label>
-      <input type="file" accept="image/*" />
+      <input type="file" name="image" accept="image/*" onChange={(e) =>
+    setFormData({
+      ...formData,
+      profile_image: e.target.files[0],
+    })
+  }/>
     </div>
 
       
@@ -208,7 +314,7 @@ const filteredMembers = member.filter((members) =>
       
 
       <div className="popup-buttons">
-        <button className="save-btn">
+        <button className="save-btn"  onClick={handleRegister}>
           Save Member
         </button>
 
@@ -230,7 +336,7 @@ const filteredMembers = member.filter((members) =>
       <h2>Member Details</h2>
 
       <img
-        src={`http://127.0.0.1:8000${selectedMember.profile_image}`}
+        src={selectedMember.profile_image}
         alt={selectedMember.name}
         className="member-photo"
       />
@@ -251,6 +357,21 @@ const filteredMembers = member.filter((members) =>
         Close
       </button>
 
+    </div>
+  </div>
+)}
+{showIdPopup && (
+  <div className="popup-overlay">
+    <div className="popup-card">
+      <h2>Registration Successful 🎉</h2>
+
+      <p>Your Member ID</p>
+
+      <h1>{newUserId}</h1>
+
+      <button onClick={() => setShowIdPopup(false)}>
+        OK
+      </button>
     </div>
   </div>
 )}
