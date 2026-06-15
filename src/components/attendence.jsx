@@ -1,20 +1,20 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import './home.css';
-import logo from './assets/logo.jpeg'
-import chestFly from './assets/chestFly.jpeg'
-import barbellpress from './assets/barbellpress.jpeg'
-import lunges from './assets/Lunges.jpeg'
-import legpress from './assets/leg_press.jpeg'
-import benchpress from './assets/bench_press.jpeg'
-import squat from './assets/squat.jpeg'
-
+import API from "./api";
 
 
 function AttendenceManagement() {
  const [showAttendance, setShowAttendance] = useState(false);
+ const [workouts, setWorkouts] = useState([]);
   const [inTime, setInTime] = useState("");
   const [outTime, setOutTime] = useState("");
+  const day = new Date().toLocaleDateString(
+  "en-US",
+  {
+    weekday: "long",
+  }
+);
   const member = JSON.parse(
   localStorage.getItem("member")
 );
@@ -23,91 +23,100 @@ function AttendenceManagement() {
   console.log("Component Loaded");
 
   const today = new Date().toDateString();
-  const attendanceDate = localStorage.getItem("attendanceDate");
-
   
-  console.log("Stored:", attendanceDate);
-  
-
-  if (attendanceDate !== today) {
-    setShowAttendance(true);
-  }
 }, []);
+const handleCheckIn = async () => {
+  try {
+    const member = JSON.parse(
+      localStorage.getItem("member")
+    );
 
+    const response = await API.post(
+      "/attendance/checkin/",
+      {
+        user_id: member.user_id,
+      }
+    );
 
-  const handleCheckIn = () => {
-    const time = new Date().toLocaleTimeString();
+    setInTime(new Date().toLocaleTimeString());
 
-    setInTime(time);
+  } catch (error) {
+    console.log(error);
+  }
+  setInTime(new Date().toLocaleTimeString());
 
-    localStorage.setItem("attendanceDate", new Date().toDateString());
-    localStorage.setItem("checkInTime", time);
-  };
-
-  const handleCheckOut = () => {
-  const time = new Date().toLocaleTimeString();
-
-  setOutTime(time);
-
-  localStorage.setItem("checkOutTime", time);
-
-  setTimeout(() => {
-    setShowAttendance(false);
-  }, 1500);
+localStorage.setItem(
+  "attendanceDate",
+  new Date().toDateString()
+);
 };
-const day = new Date().toLocaleDateString("en-US", {
-  weekday: "long",
-});
 
-  const workouts = {
-  Monday: {
-    title: "Leg Day",
-    exercises: [
-      {
-        name: "Squats",
-        sets: "4 × 10",
-        text:"Builds stronger legs, glutes, and core strength while improving balance and overall lower-body power.",
-        image: squat,
-      },
-      {
-        name: "Leg Press",
-        sets: "3 × 12",
-        image: legpress,
-      },
-      {
-        name: "Lunges",
-        sets: "3 × 15",
-        image: lunges,
-      },
-    ],
-  },
+  const handleCheckOut = async () => {
+  try {
+    const member = JSON.parse(
+      localStorage.getItem("member")
+    );
 
-  Tuesday: {
-    title: "Chest Day",
-    exercises: [
+    const response = await API.post(
+      "/attendance/checkout/",
       {
-        name: "Bench Press",
-        sets: "4 × 10",
-        text:"",
-        image: benchpress,
-      },
-      {
-        name: "Incline Press",
-        sets: "3 × 12",
-        image: barbellpress,
-      },
-      {
-        name: "Chest Fly",
-        sets: "3 × 15",
-        image: chestFly,
-      },
-    ],
-  },
+        user_id: member.user_id,
+      }
+    );
+
+    setOutTime(new Date().toLocaleTimeString());
+
+  } catch (error) {
+    console.log(error.response?.data);
+  }
 };
-const workout = workouts[day] || {
-  title: "Rest Day",
-  exercises: [],
+
+useEffect(() => {
+  getTodayAttendance();
+  fetchActivity();
+}, []);
+const getTodayAttendance = async () => {
+  try {
+    const member = JSON.parse(localStorage.getItem("member"));
+
+    const response = await API.get(`/attendance/${member.user_id}/`);
+
+    const todayDate = new Date().toISOString().split("T")[0];
+
+    const todayAttendance = response.data.find(
+      (item) => item.date === todayDate
+    );
+
+    if (todayAttendance) {
+      setInTime(todayAttendance.check_in?.split(".")[0] || "");
+      setOutTime(todayAttendance.check_out?.split(".")[0] || "");
+    } else {
+      setInTime("");
+      setOutTime("");
+      setShowAttendance(true);
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
 };
+
+const fetchActivity = async () => {
+  try {
+    const response = await API.get("/activity/view/");
+   setWorkouts(response.data);
+   console.log(response.data);
+
+  } catch (error) {
+    console.log(error);
+    
+  }
+ 
+};
+
+const todayWorkouts = workouts.filter(
+  (item) => item.day === day
+);
     return (<>
 <nav className="navbar">
         <div className="logo-section">
@@ -163,9 +172,11 @@ const workout = workouts[day] || {
               </button>
               
             ) : (
+              <>
               <p className="success">
-                Attendance Completed ✅
-              </p>
+                Attendance Completed ✅</p>
+                <p className="success">Total Workout Sessions : {}
+              </p></>
             )}
             <button
   className="close-attendance"
@@ -177,20 +188,24 @@ const workout = workouts[day] || {
         </div>
       )}
       <section className="workout-section">
-    <h2>Today's Fitness Mission: {workout.title}</h2>
+    <h2>Today's Fitness Mission: {todayWorkouts.length > 0
+    ? todayWorkouts[0].workout_day
+    : "Rest Day"}</h2>
 
     <div className="exercise-grid">
-      {workout.exercises.map((exercise, index) => (
+      {todayWorkouts.length > 0 ? (todayWorkouts.map((exercise, index) => (
         <div key={index} className="exercise-card">
           <img
             src={exercise.image}
              />
 
-          <h3>{exercise.name}</h3>
-          <p>{exercise.text}</p>
+          <h3>{exercise.exercise_name}</h3>
+          <p>{exercise.description}</p>
           <p>{exercise.sets}</p>
         </div>
-      ))}
+      ))) : (
+      <h3>Rest Day 🧘</h3>
+    )}
     </div>
   </section>
   <footer className="footer">

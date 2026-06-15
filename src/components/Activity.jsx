@@ -1,64 +1,112 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import './home.css';
 import logo from './assets/logo.jpeg'
-import chestFly from './assets/chestFly.jpeg'
-import barbellpress from './assets/barbellpress.jpeg'
-import lunges from './assets/Lunges.jpeg'
-import legpress from './assets/leg_press.jpeg'
-import benchpress from './assets/bench_press.jpeg'
-import squat from './assets/squat.jpeg'
+import API from "./api";
 
 
 
 function Activity() {
 const [selectedDay, setSelectedDay] = useState("");
 const [AddActivity, setAddActivity] = useState(false);
-  const workouts = {
-  Monday: {
-    title: "Leg Day",
-    exercises: [
-      {
-        name: "Squats",
-        sets: "4 × 10",
-        text:"Builds stronger legs, glutes, and core strength while improving balance and overall lower-body power.",
-        image: squat,
-      },
-      {
-        name: "Leg Press",
-        sets: "3 × 12",
-        image: legpress,
-      },
-      {
-        name: "Lunges",
-        sets: "3 × 15",
-        image: lunges,
-      },
-    ],
-  },
+const [activity, setActivity] = useState([]);
+const fileRef = useRef(null);
+const [formData, setFormData] =
+useState({
+  day: "",
+  workout_day: "",
+  exercise_name: "",
+  sets: "",
+  description: "",
+  image: null,
+});
 
-  Tuesday: {
-    title: "Chest Day",
-    exercises: [
-      {
-        name: "Bench Press",
-        sets: "4 × 10",
-        text:"",
-        image: benchpress,
-      },
-      {
-        name: "Incline Press",
-        sets: "3 × 12",
-        image: barbellpress,
-      },
-      {
-        name: "Chest Fly",
-        sets: "3 × 15",
-        image: chestFly,
-      },
-    ],
-  },
+
+
+useEffect(() => {
+  fetchActivity();
+  
+}, []);
+
+const fetchActivity = async () => {
+  try {
+    const response = await API.get("/activity/view/");
+   setActivity(response.data);
+   console.log(response.data);
+
+  } catch (error) {
+    console.log(error);
+    
+  }
+ 
 };
+const handleChange = (e) => {
+  const { name, value } = e.target;
+
+  setFormData({
+    ...formData,
+    [name]: value,
+  });
+};
+const handleSave = async () => {
+  const data = new FormData();
+
+  Object.keys(formData).forEach((key) => {
+    data.append(key, formData[key]);
+  });
+
+  try {
+    const response = await API.post("/activity/", data);
+
+    alert("Activity Added Successfully");
+
+    setFormData({
+      day: "",
+      workout_day: "",
+      exercise_name: "",
+      sets: "",
+      description: "",
+      image: null,
+    });
+
+    if (fileRef.current) {
+      fileRef.current.value = "";
+    }
+
+    fetchActivity(); 
+    setAddActivity(false);
+
+  } catch (error) {
+    console.log(error.response?.data);
+
+    if (error.response?.status === 400) {
+      alert("This exercise already exists for the selected day.");
+    }
+  }
+};
+
+
+const deleteActivity = async (id) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this activity?");
+  if (!confirmDelete) return;
+  try {
+    await API.delete(`/activity/${id}/`);
+
+    setActivity(
+      activity.filter((item) => item.id !== id)
+    );
+
+    alert("Activity Deleted Successfully");
+  } catch (error) {
+    console.error(error);
+    alert("Failed to Delete Activity");
+  }
+};
+
+const filteredActivities = activity.filter(
+  (item) => item.day === selectedDay
+);
+
 
     return (<>
 <nav className="navbar">
@@ -92,15 +140,19 @@ const [AddActivity, setAddActivity] = useState(false);
     {selectedDay ? (
 
     <div className="exercise-grid">
-      {workouts[selectedDay].exercises.map((activity, index) => (
+      {filteredActivities.map((activity, index) => (
         <div key={index} className="exercise-card">
-          <img
-            src={activity.image}
-             />
+        
+            <img
+        src={activity.image}
+        alt={activity.exercise_name}
+      />
+        
 
-          <h3>{activity.name}</h3>
-          <p>{activity.text}</p>
+          <h3>{activity.exercise_name}</h3>
+          <p>{activity.description}</p>
           <p>{activity.sets}</p>
+          <button onClick={() => deleteActivity(activity.id)}>Delete</button>
         </div>
       ))}
     </div>
@@ -117,16 +169,18 @@ const [AddActivity, setAddActivity] = useState(false);
 
       <h2>Add Activity</h2>
 
-      <select className="gender-select">
+      <select className="gender-select" name="day" value={formData.day}
+             onChange={handleChange}>
       <option value="">Select Day</option>
-          <option value="monday">Monday</option>
+          <option value="Monday">Monday</option>
           <option value="Tuesday">Tuesday</option>
           <option value="Wednesday">Wednesday</option>
           <option value="Thursday">Thursday</option>
           <option value="Friday">Friday</option>
           <option value="Saturday">Saturday</option>
       </select>
-      <select className="gender-select">
+      <select className="gender-select" name="workout_day" value={formData.workout_day}
+             onChange={handleChange}>
         <option value="">Select Wrokout Day</option>
         <option value="Leg Day">Leg Day</option>
         <option value="Back Day">Back Day</option>
@@ -135,17 +189,25 @@ const [AddActivity, setAddActivity] = useState(false);
         <option value="Arm Day">Arm Day</option>
         <option value="Cardio & Core">Cardio & Core</option>
       </select>
- <input type="text" placeholder="Workout Activities"/>
- <input type="text" placeholder="Workout Set"/>
- <textarea placeholder="Leave us a message..."></textarea>
+ <input type="text" placeholder="Workout Activities" name="exercise_name" value={formData.exercise_name}
+             onChange={handleChange}/>
+ <input type="text" placeholder="Workout Set" name="sets" value={formData.sets}
+             onChange={handleChange}/>
+ <textarea placeholder="Leave us a description..." name="description" value={formData.description}
+             onChange={handleChange}></textarea>
  <div className="profile-upload">
       <label>Referral Images</label>
-      <input type="file" accept="image/*" />
+      <input  ref={fileRef} type="file" accept="image/*" onChange={(e) =>
+    setFormData({
+      ...formData,
+      image: e.target.files[0],
+    })
+  } />
     </div>
 
                
           <div className="popup-buttons">
-        <button className="save-btn">
+        <button className="save-btn" onClick={handleSave}>
           Add Activity
         </button>
 

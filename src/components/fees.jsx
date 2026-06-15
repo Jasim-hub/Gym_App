@@ -7,6 +7,7 @@ import elite from './assets/elite.jpeg'
 import { useState, useEffect } from "react";
 import Home from "./home";
 import { Link, useNavigate } from "react-router-dom";
+import API from "./api";
 
 
 function FeeManagement() {
@@ -19,8 +20,64 @@ function FeeManagement() {
   const handleRenw = () =>{
     navigation ("/fee")
   };
+const handlePayment = async (planName, amount, validity) => {
+  try {
+    const orderResponse = await API.post("/payment/create-order/", {
+      amount: amount,
+      plan: planName,
+      user_id: member.user_id,
+      validity: validity,
+    });
 
+    const options = {
+      key: orderResponse.data.key,
+      amount: orderResponse.data.amount,
+      currency: "INR",
+      order_id: orderResponse.data.order_id,
 
+      name: "Infinity Wellness Hub",
+      description: `${planName} Membership Payment`,
+
+      prefill: {
+        name: member.name,
+        email: member.email,
+        contact: member.phone,
+      },
+
+      notes: {
+        user_id: member.user_id,
+        member_name: member.name,
+        plan: planName,
+      },
+
+      handler: async function (paymentResponse) {
+        console.log(paymentResponse);
+
+        await API.post("/payment/save/", {
+          user_id: member.user_id,
+          plan: planName,
+          amount: amount,
+          razorpay_payment_id: paymentResponse.razorpay_payment_id,
+          razorpay_order_id: paymentResponse.razorpay_order_id,
+          razorpay_signature: paymentResponse.razorpay_signature,
+        });
+
+        alert(`${planName} Payment Successful ✅`);
+      },
+
+      theme: {
+        color: "#ff6600",
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
+
+  } catch (error) {
+    console.log(error.response?.data || error);
+    alert("Payment failed");
+  }
+};
   return (
     <div>
 <nav className="navbar">
@@ -90,7 +147,7 @@ function FeeManagement() {
                     <li>✔ Cardio Access</li>
                   </ul>
                   </div>
-                  <button>GET STARTED</button>
+                  <button onClick={() => handlePayment("Basic", 1300, 1)}>GET STARTED</button>
                 </div>
                 <div className="fee-card">
                    <img src={premium}/> 
@@ -107,7 +164,7 @@ function FeeManagement() {
                     <li>✔ Yoga Classes</li>
                   </ul>
                   </div>
-                  <button>GET STARTED</button>
+                  <button onClick={() => handlePayment("Premium", 4500, 6)}>GET STARTED</button>
                 </div>
                 <div className="fee-card">
                    <img src={elite}/> 
@@ -126,7 +183,7 @@ function FeeManagement() {
                   </ul>
                   
                   </div>
-                  <button>GET STARTED</button>
+                  <button onClick={() => handlePayment("Elite", 7500, 12)}>GET STARTED</button>
                 </div>
                 </section>
 <footer className="footer">

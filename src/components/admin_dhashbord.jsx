@@ -1,7 +1,6 @@
 import './admin.css';
 import logo from './assets/logo.jpeg';
 import { useState, useEffect } from "react";
-import profileImage from './assets/logo.jpeg'
 import API from "./api";
 import { data } from 'react-router-dom';
 
@@ -14,6 +13,7 @@ function AdminDashboard() {
   const [showIdPopup, setShowIdPopup] = useState(false);
 const [newUserId, setNewUserId] = useState("");
 const [confirmPassword, setConfirmPassword] = useState("");
+const [attendance, setAttendance] = useState([]);
     const [formData, setFormData] = useState({
   name: "",
   email: "",
@@ -91,19 +91,62 @@ setShowIdPopup(true);
 };
 
 useEffect(() => {
-  fetchMember();
+  fetchMembers();
+  fetchAttendance();
 }, []);
 
-const fetchMember = async () => {
+const fetchMembers = async () => {
   try {
-    const response = await API.get(`/members/`);
-   setMember(response.data);
+    const memberRes = await API.get("/members/");
+    const reportRes = await API.get("/monthly/");
+
+    const mergedData = memberRes.data.map(
+      (member) => {
+
+        const report = reportRes.data.find(
+          (r) => r.user_id === member.user_id
+        );
+
+        return {
+          ...member,
+          status: report?.status || "Inactive"
+        };
+      }
+    );
+
+    setMember(mergedData);
 
   } catch (error) {
     console.log(error);
   }
 };
-    
+
+
+const fetchAttendance = async () => {
+  try {
+    const response = await API.get(
+      "/attendance/"
+    );
+
+    setAttendance(response.data);
+
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const today = new Date()
+  .toISOString()
+  .split("T")[0];
+
+const presentToday = attendance.filter(
+  (item) => item.date === today
+).length;
+
+const totalActiveMembers =
+  member.filter(
+    (member) => member.status === "Active"
+  ).length;
 const filteredMembers = member.filter((members) =>
   members.name.toLowerCase().includes(search.toLowerCase()) ||
   members.phone.includes(search)
@@ -137,7 +180,7 @@ const filteredMembers = member.filter((members) =>
 
         <div className="dashboard-card">
           <h3>Present Today</h3>
-          <h2>85</h2>
+          <h2>{presentToday}</h2>
         </div>
         <div className="dashboard-card">
           <h3>Due Payments</h3>
@@ -147,7 +190,7 @@ const filteredMembers = member.filter((members) =>
 
         <div className="dashboard-card">
           <h3>Active Plans</h3>
-          <h2>120</h2>
+          <h2>{totalActiveMembers}</h2>
         </div>
 
         
@@ -198,15 +241,15 @@ const filteredMembers = member.filter((members) =>
         </td>
         <td>{members.joined_date}</td>
         <td>
-         {/* <span
+         <span
     className={`status ${
-      member.status === "Active"
+      members.status === "Active"
         ? "activation"
         : "inactive"
     }`}
   >
-    {member.status}
-  </span> */}
+    {members.status}
+  </span>
         </td>
         <td>
           <button className="view-btn"  onClick={() => {
