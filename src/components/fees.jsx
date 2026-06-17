@@ -8,74 +8,123 @@ import { useState, useEffect } from "react";
 import Home from "./home";
 import { Link, useNavigate } from "react-router-dom";
 import API from "./api";
+import logo1 from './assets/logo2.jpeg'
+
 
 
 function FeeManagement() {
    const [showFee, setShowFee] = useState(false);
    const navigation=useNavigate();
-   const member = JSON.parse(
+   const [alertMessage, setAlertMessage] = useState("");
+   const [showAlert, setShowAlert] = useState(false);
+    const member = JSON.parse(
   localStorage.getItem("member")
 );
+const [membership, setMembership] = useState({});
 
   const handleRenw = () =>{
     navigation ("/fee")
   };
-const handlePayment = async (planName, amount, validity) => {
+
+  useEffect(() => {
+  fetchMembership();
+}, []);
+  const fetchMembership = async () => {
   try {
-    const orderResponse = await API.post("/payment/create-order/", {
-      amount: amount,
-      plan: planName,
-      user_id: member.user_id,
-      validity: validity,
-    });
+    const response = await API.get(
+      `/membership/${member.user_id}/`
+    );
 
-    const options = {
-      key: orderResponse.data.key,
-      amount: orderResponse.data.amount,
-      currency: "INR",
-      order_id: orderResponse.data.order_id,
-
-      name: "Infinity Wellness Hub",
-      description: `${planName} Membership Payment`,
-
-      prefill: {
-        name: member.name,
-        email: member.email,
-        contact: member.phone,
-      },
-
-      notes: {
-        user_id: member.user_id,
-        member_name: member.name,
-        plan: planName,
-      },
-
-      handler: async function (paymentResponse) {
-        console.log(paymentResponse);
-
-        await API.post("/payment/save/", {
-          user_id: member.user_id,
-          plan: planName,
-          amount: amount,
-          razorpay_payment_id: paymentResponse.razorpay_payment_id,
-          razorpay_order_id: paymentResponse.razorpay_order_id,
-          razorpay_signature: paymentResponse.razorpay_signature,
-        });
-
-        alert(`${planName} Payment Successful ✅`);
-      },
-
-      theme: {
-        color: "#ff6600",
-      },
-    };
-
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.open();
+    setMembership(response.data);
 
   } catch (error) {
+    console.log(error);
+  }
+};
+
+  // const handlePayment = async (planName, amount, validity) => {
+//   try {
+//     const orderResponse = await API.post("/payment/create-order/", {
+//       amount: amount,
+//       plan: planName,
+//       user_id: member.user_id,
+//       validity: validity,
+//     });
+
+//     const options = {
+//       key: orderResponse.data.key,
+//       amount: orderResponse.data.amount,
+//       currency: "INR",
+//       order_id: orderResponse.data.order_id,
+
+//       name: "Infinity Wellness Hub",
+//       description: `${planName} Membership Payment`,
+
+//       prefill: {
+//         name: member.name,
+//         email: member.email,
+//         contact: member.phone,
+//       },
+
+//       notes: {
+//         user_id: member.user_id,
+//         member_name: member.name,
+//         plan: planName,
+//       },
+
+//       handler: async function (paymentResponse) {
+//         console.log(paymentResponse);
+
+//         await API.post("/payment/save/", {
+//           user_id: member.user_id,
+//           plan: planName,
+//           amount: amount,
+//           razorpay_payment_id: paymentResponse.razorpay_payment_id,
+//           razorpay_order_id: paymentResponse.razorpay_order_id,
+//           razorpay_signature: paymentResponse.razorpay_signature,
+//         });
+
+//         alert(`${planName} Payment Successful ✅`);
+//       },
+
+//       theme: {
+//         color: "#ff6600",
+//       },
+//     };
+
+//     const paymentObject = new window.Razorpay(options);
+//     paymentObject.open();
+
+//   } catch (error) {
+//     console.log(error.response?.data || error);
+//     alert("Payment failed");
+//   }
+// };
+const handleDummyPayment = async (planName, amount, validity, method) => {
+  try {
+    await API.post("/payment/save/", {
+      user_id: member.user_id,
+      plan: planName,
+      amount: amount,
+      validity: validity,
+      payment_mode: method,
+      razorpay_payment_id: "dummy_payment",
+      razorpay_order_id: "dummy_order",
+      razorpay_signature: "dummy_signature",
+    });
+    setAlertMessage(`${planName} Activated Successfully ✅`);
+setShowAlert(true);
+
+    
+  } catch (error) {
     console.log(error.response?.data || error);
-    alert("Payment failed");
+    setAlertMessage("Dummy payment failed");
+setShowAlert(true);
+    if (membership.status === "Active" && !membership.can_renew) {
+   setAlertMessage(`You already have an active ${membership.plan} plan. You can renew only before 5 days of expiry.`);
+setShowAlert(true);
+    return;
+}
   }
 };
   return (
@@ -101,13 +150,13 @@ const handlePayment = async (planName, amount, validity) => {
 
        <h2>My Membership</h2>
 
-      <h3>Premium Plan</h3>
+      <h3>{membership.plan} Plan</h3>
 
-      <p>Status: Active ✅</p>
-      <p>Start Date: 01-06-2026</p>
-      <p>Expiry Date: 30-06-2026</p>
-      <p>Remaining Days: 24</p>
-
+      <p>Status: {membership.status}</p>
+      <p>Start Date: {membership.start_date}</p>
+      <p>Expiry Date: {membership.expiry_date}</p>
+      <p>Remaining Days: {membership.remaining_days}</p>
+          {membership.can_renew && (
       <button className="renew-btn" onClick={() => {
     setShowFee(false);
 
@@ -122,7 +171,7 @@ const handlePayment = async (planName, amount, validity) => {
     }, 100);
   }}>
         Renew Plan
-      </button>
+      </button>)}
       <button
         className="renew-btn"
         onClick={() => setShowFee(false)}
@@ -147,7 +196,7 @@ const handlePayment = async (planName, amount, validity) => {
                     <li>✔ Cardio Access</li>
                   </ul>
                   </div>
-                  <button onClick={() => handlePayment("Basic", 1300, 1)}>GET STARTED</button>
+                  <button onClick={() => handleDummyPayment("Basic", 1300, 1, "UPI")}>GET STARTED</button>
                 </div>
                 <div className="fee-card">
                    <img src={premium}/> 
@@ -164,7 +213,7 @@ const handlePayment = async (planName, amount, validity) => {
                     <li>✔ Yoga Classes</li>
                   </ul>
                   </div>
-                  <button onClick={() => handlePayment("Premium", 4500, 6)}>GET STARTED</button>
+                  <button onClick={() => handleDummyPayment("Premium", 4500, 6, "Card")}>GET STARTED</button>
                 </div>
                 <div className="fee-card">
                    <img src={elite}/> 
@@ -183,9 +232,28 @@ const handlePayment = async (planName, amount, validity) => {
                   </ul>
                   
                   </div>
-                  <button onClick={() => handlePayment("Elite", 7500, 12)}>GET STARTED</button>
+                  <button onClick={() => handleDummyPayment("Elite", 7500, 12, "Net_Banking")}>GET STARTED</button>
                 </div>
                 </section>
+                {showAlert && (
+  <div className="alert-overlay">
+    <div className="alert-card">
+      <h3>Notification</h3>
+      <img
+        src={logo}
+        alt="Success"
+      />
+
+      <p>{alertMessage}</p>
+
+      <button
+        onClick={() => setShowAlert(false)}
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
 <footer className="footer">
   <div className="footer-container">
 
