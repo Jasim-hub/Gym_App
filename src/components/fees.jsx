@@ -101,6 +101,7 @@ const [membership, setMembership] = useState({});
 //   }
 // };
 const handleDummyPayment = async (planName, amount, validity, method) => {
+  
   try {
     await API.post("/payment/save/", {
       user_id: member.user_id,
@@ -117,14 +118,10 @@ setShowAlert(true);
 
     
   } catch (error) {
+    setAlertMessage( error.response?.data?.error || "Dummy payment failed");
+setShowAlert(true);
     console.log(error.response?.data || error);
-    setAlertMessage("Dummy payment failed");
-setShowAlert(true);
-    if (membership.status === "Active" && !membership.can_renew) {
-   setAlertMessage(`You already have an active ${membership.plan} plan. You can renew only before 5 days of expiry.`);
-setShowAlert(true);
-    return;
-}
+       
   }
 };
   return (

@@ -175,8 +175,7 @@ const todayWorkouts = workouts.filter(
               <>
               <p className="success">
                 Attendance Completed ✅</p>
-                <p className="success">Total Workout Sessions : {}
-              </p></>
+                </>
             )}
             <button
   className="close-attendance"

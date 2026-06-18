@@ -14,6 +14,8 @@ function AdminDashboard() {
 const [newUserId, setNewUserId] = useState("");
 const [confirmPassword, setConfirmPassword] = useState("");
 const [attendance, setAttendance] = useState([]);
+const [showEdit, setShowEdit] = useState(false);
+const [editData, setEditData] = useState({});
     const [formData, setFormData] = useState({
   name: "",
   email: "",
@@ -24,7 +26,10 @@ const [attendance, setAttendance] = useState([]);
   password: "",
   profile_image: null,
 });
-
+const openEditMember = (member) => {
+  setEditData(member);
+  setShowEdit(true);
+};
 const fullPhone =
   formData.countryCode + formData.phone;
 
@@ -35,6 +40,12 @@ const handleChange = (e) => {
   setFormData({
     ...formData,
     [name]: value,
+  });
+};
+const handleEditChange = (e) => {
+  setEditData({
+    ...editData,
+    [e.target.name]: e.target.value,
   });
 };
 
@@ -99,6 +110,7 @@ const fetchMembers = async () => {
   try {
     const memberRes = await API.get("/members/");
     const reportRes = await API.get("/monthly/");
+    const feesRes = await API.get(`/membership/view/`);
 
     const mergedData = memberRes.data.map(
       (member) => {
@@ -106,10 +118,15 @@ const fetchMembers = async () => {
         const report = reportRes.data.find(
           (r) => r.user_id === member.user_id
         );
+        const fees=feesRes.data.find(
+    (r) => r.member_name === member.name
+  );
 
         return {
           ...member,
-          status: report?.status || "Inactive"
+          status: report?.status || "Inactive",
+          plan: fees?.plan || "-",
+          feesstatus: fees?.status || "Expired"
         };
       }
     );
@@ -120,7 +137,7 @@ const fetchMembers = async () => {
     console.log(error);
   }
 };
-
+console.log(member)
 
 const fetchAttendance = async () => {
   try {
@@ -134,6 +151,42 @@ const fetchAttendance = async () => {
     console.log(error);
   }
 };
+const updateMember = async () => {
+  try {
+    await API.patch(`/members/${editData.id}/`, {
+      name: editData.name,
+      email: editData.email,
+      phone: editData.phone,
+      gender: editData.gender,
+      date_of_birth: editData.date_of_birth,
+    });
+
+    alert("Member details updated successfully");
+    setShowEdit(false);
+    fetchMembers();
+
+  } catch (error) {
+    console.log(error.response?.data);
+    alert("Failed to update member");
+  }
+};
+const deleteActivity = async (id) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this Member detalis?");
+  if (!confirmDelete) return;
+  try {
+    await API.delete(`/members/${id}/`);
+
+    setMember(
+      member.filter((item) => item.id !== id)
+    );
+
+    alert("Member detalis Deleted Successfully");
+  } catch (error) {
+    console.error(error);
+    alert("Failed to Delete Member detalis");
+  }
+};
+
 
 const today = new Date()
   .toISOString()
@@ -147,6 +200,12 @@ const totalActiveMembers =
   member.filter(
     (member) => member.status === "Active"
   ).length;
+  const duePayments = member.filter(
+  (item) =>
+    item.feesstatus === "Inactive" ||
+    item.feesstatus === "Expired" ||
+    item.plan === "No Plan"
+);
 const filteredMembers = member.filter((members) =>
   members.name.toLowerCase().includes(search.toLowerCase()) ||
   members.phone.includes(search)
@@ -184,7 +243,7 @@ const filteredMembers = member.filter((members) =>
         </div>
         <div className="dashboard-card">
           <h3>Due Payments</h3>
-          <h2>85</h2>
+          <h2>{duePayments.length}</h2>
           <p>pending</p>
         </div>
 
@@ -229,15 +288,15 @@ const filteredMembers = member.filter((members) =>
         <td>{members.name}</td>
         <td>{members.phone}</td>
         <td>
-          {/* <span className={
-  member.plan === "Basic"
+          <span className={
+  members.plan === "Basic"
     ? "basic"
-    : member.plan === "Premium"
+    : members.plan === "Premium"
     ? "premium"
     : "elite"
 }>
-            {member.plan}
-          </span> */}
+            {members.plan}
+          </span>
         </td>
         <td>{members.joined_date}</td>
         <td>
@@ -260,11 +319,11 @@ const filteredMembers = member.filter((members) =>
             View
           </button>
 
-          <button className="deactivate-btn">
-            Deactivate
+          <button className="deactivate-btn" onClick={() => openEditMember(members)}>
+            Edit
           </button>
 
-          <button className="delete-btn">
+          <button className="delete-btn" onClick={() => deleteActivity(members.id)}>
             Delete
           </button>
         </td>
@@ -372,6 +431,66 @@ const filteredMembers = member.filter((members) =>
     </div>
   </div>
 )}
+{showEdit && (
+  <div className="popup-overlay">
+    <div className="popup-card">
+      <h2>Edit Member Details</h2>
+
+      <input
+        type="text"
+        name="name"
+        value={editData.name || ""}
+        onChange={handleEditChange}
+        placeholder="Name"
+      />
+
+      <input
+        type="email"
+        name="email"
+        value={editData.email || ""}
+        onChange={handleEditChange}
+        placeholder="Email"
+      />
+
+      <input
+        type="text"
+        name="phone"
+        value={editData.phone || ""}
+        onChange={handleEditChange}
+        placeholder="Phone"
+      />
+
+      <select
+        name="gender"
+        value={editData.gender || ""}
+        onChange={handleEditChange}
+      >
+        <option value="">Select Gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+
+      <input
+        type="date"
+        name="date_of_birth"
+        value={editData.date_of_birth || ""}
+        onChange={handleEditChange}
+      />
+
+      <div className="popup-buttons">
+        <button onClick={updateMember} className='save-btn'>
+          Save Changes
+        </button>
+
+        <button onClick={() => setShowEdit(false)} className="save-btn">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
 {showView && selectedMember && (
   <div className="popup-overlay">
     <div className="viewpopup-card">

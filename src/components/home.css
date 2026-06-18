@@ -14,7 +14,9 @@ body{
         background-size: 40px 40px;
         padding-top: 80px;
 }
-
+button{
+  font-family: 'Montserrat', sans-serif;
+}
 
 .navbar{
   background: rgba(13, 13, 13, 0.15);
@@ -105,7 +107,7 @@ height: 50px;
 }
 .hero {
    
-    background-image:linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(./assets/back.jpg);
+    background-image:linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(./assets/back1.png);
     background-size: cover;
     background-position: center;
     background-repeat:no-repeat;
@@ -508,7 +510,7 @@ button:hover{
 .footer-logo i{
   gap: 20px;
   font-size: 20px;
-  color:white;
+  color:#ff6600;
   margin: 5px;
 }
 a{
@@ -738,9 +740,7 @@ padding:80px 50px;
       gap:25px;
 
 }
-.sptitle{
-  color: #ff6600;
-}
+
 .workout-section h2{
   text-align: center;
   background: linear-gradient(135deg, #fa6807, #fbfaf9);
@@ -751,6 +751,7 @@ padding:80px 50px;
   font-size: 2.5rem;
   margin-bottom: 100px;
   animation: slideLeft 1.5s ease-out;
+  font-family: 'Playfair Display', serif;
 }
 .exercise-grid{
   display:grid;
