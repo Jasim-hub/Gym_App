@@ -244,7 +244,7 @@ const filteredMembers = member.filter((members) =>
         <div className="dashboard-card">
           <h3>Due Payments</h3>
           <h2>{duePayments.length}</h2>
-          <p>pending</p>
+          <p className="pendingp"><i class="fa-solid fa-triangle-exclamation"></i> pending</p>
         </div>
 
         <div className="dashboard-card">

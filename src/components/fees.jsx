@@ -178,7 +178,19 @@ setShowAlert(true);
     </div>
   </div>
 )}
+{membership?.status === "Inactive" && (
+  <p className="warning">
+    <i class="fa-solid fa-triangle-exclamation"></i> Your membership has expired. Please renew your plan to access gym features.
+  </p>
+)}
+
+{!membership && (
+  <p className="warning">
+    No active membership found. Please choose a plan to continue.
+  </p>
+)}
 <h2 className="second">Choose Your Fitness Journey</h2>
+
         <section className="fees-mang" id="fees">
                 <div className="fee-card">
                    <img src={basic}/> 
@@ -251,6 +263,7 @@ setShowAlert(true);
     </div>
   </div>
 )}
+
 <footer className="footer">
   <div className="footer-container">
 

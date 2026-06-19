@@ -121,7 +121,7 @@ setShowAlert(true);
     ) {
       localStorage.setItem(
         "adminLogin",
-        "true"
+        "true"  
       );
 
       navigate("/admin");
@@ -129,22 +129,33 @@ setShowAlert(true);
 
   } else {
 
-  try {
+   try {
+    const response = await API.post("/login/", loginData);
 
-    const response = await API.post(
-      "/login/",
-      loginData
+    const memberData = response.data;
+
+    localStorage.setItem(
+      "member",
+      JSON.stringify(memberData)
     );
-localStorage.setItem(
-  "member",
-  JSON.stringify(response.data)
-);
-   setAlertMessage(`Welcome ${response.data.name}`);
-setShowAlert(true);
 
-    navigate("/home");
+    const membershipRes = await API.get(
+      `/membership/${memberData.user_id}/`
+    );
 
-  } catch (error) {
+    localStorage.setItem(
+      "membership",
+      JSON.stringify(membershipRes.data)
+    );
+
+    if (
+      membershipRes.data.status === "Expired" ||
+      membershipRes.data.status === "Inactive"
+    ) {
+      navigate("/fee");
+    } else {
+      navigate("/home");
+    }} catch (error) {
 
     
     setAlertMessage(error.response?.data?.message ||
