@@ -42,89 +42,70 @@ const [membership, setMembership] = useState({});
   }
 };
 
-  // const handlePayment = async (planName, amount, validity) => {
-//   try {
-//     const orderResponse = await API.post("/payment/create-order/", {
-//       amount: amount,
-//       plan: planName,
-//       user_id: member.user_id,
-//       validity: validity,
-//     });
 
-//     const options = {
-//       key: orderResponse.data.key,
-//       amount: orderResponse.data.amount,
-//       currency: "INR",
-//       order_id: orderResponse.data.order_id,
-
-//       name: "Infinity Wellness Hub",
-//       description: `${planName} Membership Payment`,
-
-//       prefill: {
-//         name: member.name,
-//         email: member.email,
-//         contact: member.phone,
-//       },
-
-//       notes: {
-//         user_id: member.user_id,
-//         member_name: member.name,
-//         plan: planName,
-//       },
-
-//       handler: async function (paymentResponse) {
-//         console.log(paymentResponse);
-
-//         await API.post("/payment/save/", {
-//           user_id: member.user_id,
-//           plan: planName,
-//           amount: amount,
-//           razorpay_payment_id: paymentResponse.razorpay_payment_id,
-//           razorpay_order_id: paymentResponse.razorpay_order_id,
-//           razorpay_signature: paymentResponse.razorpay_signature,
-//         });
-
-//         alert(`${planName} Payment Successful ✅`);
-//       },
-
-//       theme: {
-//         color: "#ff6600",
-//       },
-//     };
-
-//     const paymentObject = new window.Razorpay(options);
-//     paymentObject.open();
-
-//   } catch (error) {
-//     console.log(error.response?.data || error);
-//     alert("Payment failed");
-//   }
-// };
-const handleDummyPayment = async (planName, amount, validity, method) => {
-  
+const handlePayment = async (planName, amount, validity,) => {
   try {
-    await API.post("/payment/save/", {
-      user_id: member.user_id,
-      plan: planName,
-      amount: amount,
-      validity: validity,
-      payment_mode: method,
-      razorpay_payment_id: "dummy_payment",
-      razorpay_order_id: "dummy_order",
-      razorpay_signature: "dummy_signature",
-    });
-    setAlertMessage(`${planName} Activated Successfully ✅`);
-setShowAlert(true);
+    const membershipRes = await API.get(`/membership/${member.user_id}/`);
+    const current = membershipRes.data;
+    console.log(membershipRes)
 
-    
-  } catch (error) {
-    setAlertMessage( error.response?.data?.error || "Dummy payment failed");
-setShowAlert(true);
-    console.log(error.response?.data || error);
-       
+    if (
+      current.status === "Paid" &&
+      Number(current.remaining_days) > 5
+    ) {
+      setAlertMessage(
+        `You already have an active ${current.plan} plan. You can renew only when 5 or fewer days are remaining.`
+      );
+      setShowAlert(true);
+      return;
+    }
+    else{
+    const orderRes = await API.post("/payment/create-order/", {
+      amount: amount,
+    });
+
+    const options = {
+      key: orderRes.data.key,
+      amount: orderRes.data.amount,
+      currency: "INR",
+      order_id: orderRes.data.order_id,
+      name: "Infinity Wellness Hub",
+      description: `${planName} Membership`,
+
+      prefill: {
+        name: member.name,
+        email: member.email,
+        contact: member.phone,
+      },
+
+      handler: async function (response) {
+        await API.post("/payment/save/", {
+          user_id: member.user_id,
+          plan: planName,
+          amount: amount,
+          validity: validity,
+          payment_mode: response.payment_mode,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_signature: response.razorpay_signature,
+        });
+
+        setAlertMessage(`${planName} Activated Successfully ✅`);
+        setShowAlert(true);
+        fetchMembership();
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
   }
-};
-  return (
+  } catch (error) {
+    setAlertMessage(error.response?.data?.error || "Payment failed");
+    setShowAlert(true);
+    console.log(error.response?.data || error);
+  }
+  
+};  return (
     <div>
 <nav className="navbar">
         <div className="logo-section">
@@ -205,7 +186,7 @@ setShowAlert(true);
                     <li>✔ Cardio Access</li>
                   </ul>
                   </div>
-                  <button onClick={() => handleDummyPayment("Basic", 1300, 1, "UPI")}>GET STARTED</button>
+                  <button onClick={() => handlePayment("Basic", 1300, 1)}>GET STARTED</button>
                 </div>
                 <div className="fee-card">
                    <img src={premium}/> 
@@ -222,7 +203,7 @@ setShowAlert(true);
                     <li>✔ Yoga Classes</li>
                   </ul>
                   </div>
-                  <button onClick={() => handleDummyPayment("Premium", 4500, 6, "Card")}>GET STARTED</button>
+                  <button onClick={() => handlePayment("Premium", 4500, 6, )}>GET STARTED</button>
                 </div>
                 <div className="fee-card">
                    <img src={elite}/> 
@@ -241,7 +222,7 @@ setShowAlert(true);
                   </ul>
                   
                   </div>
-                  <button onClick={() => handleDummyPayment("Elite", 7500, 12, "Net_Banking")}>GET STARTED</button>
+                  <button onClick={() => handlePayment("Elite", 7500, 12)}>GET STARTED</button>
                 </div>
                 </section>
                 {showAlert && (
