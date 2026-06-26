@@ -9,6 +9,11 @@ function AttendenceManagement() {
  const [workouts, setWorkouts] = useState([]);
   const [inTime, setInTime] = useState("");
   const [outTime, setOutTime] = useState("");
+  const [totalHours, setTotalHours] = useState("");
+  const [attendanceReport, setAttendanceReport] = useState([]);
+const [totalCheckins, setTotalCheckins] = useState(0);
+const [avgAttendance, setAvgAttendance] = useState(0);
+const [weeklyData, setWeeklyData] = useState([]);
   const day = new Date().toLocaleDateString(
   "en-US",
   {
@@ -71,9 +76,43 @@ localStorage.setItem(
   }
 };
 
+const today = new Date();
+
+const currentMonth = today.toLocaleString("default", {
+  month: "long",
+});
+
+const currentYear = today.getFullYear();
+
+const currentDate = today.getDate();
+
+const firstDay = new Date(
+  currentYear,
+  today.getMonth(),
+  1
+).getDay();
+
+const totalDays = new Date(
+  currentYear,
+  today.getMonth() + 1,
+  0
+).getDate();
+
+const weekDays = [
+  "Sun",
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
+];
+
+
 useEffect(() => {
   getTodayAttendance();
   fetchActivity();
+  fetchAttendanceReport();
 }, []);
 const getTodayAttendance = async () => {
   try {
@@ -90,12 +129,68 @@ const getTodayAttendance = async () => {
     if (todayAttendance) {
       setInTime(todayAttendance.check_in?.split(".")[0] || "");
       setOutTime(todayAttendance.check_out?.split(".")[0] || "");
+      setTotalHours(todayAttendance.total_hours?.split(".")[0] || "");
     } else {
       setInTime("");
       setOutTime("");
       setShowAttendance(true);
     }
 
+  } catch (error) {
+    console.log(error);
+  }
+};
+const fetchAttendanceReport = async () => {
+  try {
+    const member = JSON.parse(localStorage.getItem("member"));
+
+    const response = await API.get(`/attendance/${member.user_id}/`);
+
+    const currentMonthData = response.data.filter((item) => {
+      const itemDate = new Date(item.date);
+
+      return (
+        itemDate.getMonth() === today.getMonth() &&
+        itemDate.getFullYear() === today.getFullYear()
+      );
+    });
+
+    setAttendanceReport(currentMonthData);
+
+    const presentDays = currentMonthData.filter(
+      (item) => item.status === "Present"
+    ).length;
+
+    setTotalCheckins(presentDays);
+
+    setAvgAttendance(
+      currentMonthData.length > 0
+        ? ((presentDays / currentDate) * 100).toFixed(1)
+        : 0
+    );
+
+    const weeks = [0, 0, 0, 0, 0];
+
+    currentMonthData.forEach((item) => {
+      const d = new Date(item.date).getDate();
+
+      if (item.status === "Present") {
+        if (d <= 7) weeks[0]++;
+        else if (d <= 14) weeks[1]++;
+        else if (d <= 21) weeks[2]++;
+        else if (d <= 28) weeks[3]++;
+        else weeks[4]++;
+      }
+    });
+
+    setWeeklyData([
+      { label: "W1", value: weeks[0] },
+      { label: "W2", value: weeks[1] },
+      { label: "W3", value: weeks[2] },
+      { label: "W4", value: weeks[3] },
+      { label: "W5", value: weeks[4] },
+    ]);
+    
   } catch (error) {
     console.log(error);
   }
@@ -174,7 +269,11 @@ const todayWorkouts = workouts.filter(
             ) : (
               <>
               <p className="success">
-                Attendance Completed ✅</p>
+                Attendance Completed ✅.
+                </p>
+              <p className="success">
+                Total Hours: {totalHours}
+                </p>
                 </>
             )}
             <button
@@ -186,6 +285,104 @@ const todayWorkouts = workouts.filter(
           </div>
         </div>
       )}
+      <section className="attendance-report">
+      <div className="attendance-header">
+        <h2>ATTENDANCE REPORT</h2>
+
+        
+      </div>
+
+      <div className="report-grid">
+        <div className="metrics-section">
+          <div className="metric-box">
+            <h4>KEY METRICS</h4>
+            <p>Total Check-ins</p>
+            <h2>{totalCheckins}</h2>
+            </div>
+
+          <div className="metric-box">
+            <p>Avg. Daily Attendance</p>
+            <h2>{avgAttendance}%</h2>
+          </div>
+
+                  </div>
+
+        <div className="calendar-card">
+
+  <div className="calendar-top">
+    <h3>MONTHLY ATTENDANCE OVERVIEW</h3>
+  </div>
+
+  <h4>
+    {currentMonth} {currentYear}
+  </h4>
+
+  <div className="calendar-grid">
+
+    {weekDays.map((day) => (
+      <div key={day} className="day-name">
+        {day}
+      </div>
+    ))}
+
+    {Array.from({ length: firstDay }).map((_, i) => (
+      <div key={`empty-${i}`}></div>
+    ))}
+
+    {Array.from({ length: totalDays }).map((_, i) => (
+      <div
+        key={i}
+        className={
+  currentDate === i + 1
+    ? "today"
+    : attendanceReport.some(
+        (item) =>
+          new Date(item.date).getDate() === i + 1 &&
+          item.status === "Present"
+      )
+    ? "present-day"
+    : "day"
+}
+      >
+        {i + 1}
+
+        
+      </div>
+    ))}
+
+  </div>
+
+</div>
+
+        <div className="chart-card">
+          <div className="calendar-top">
+            <h3>WEEKLY ATTENDANCE TRENDS</h3>
+            </div>
+
+          <h4>
+    {currentMonth} {currentYear}
+  </h4>
+
+          <div className="bar-chart">
+            {weeklyData.map((bar) => (
+  <div className="bar-wrap" key={bar.label}>
+    <div
+      className="bar"
+      style={{
+        height: `${bar.value * 35 + 20}px`,
+      }}
+    >
+      <span>{bar.value}</span>
+    </div>
+    <p>{bar.label}</p>
+  </div>
+))}
+          </div>
+
+          <p className="legend">🟧 Member Check-ins</p>
+        </div>
+      </div>
+    </section>
       <section className="workout-section">
     <h2>Today's Fitness Mission: {todayWorkouts.length > 0
     ? todayWorkouts[0].workout_day
@@ -207,6 +404,7 @@ const todayWorkouts = workouts.filter(
     )}
     </div>
   </section>
+
   <footer className="footer">
   <div className="footer-container">
 
