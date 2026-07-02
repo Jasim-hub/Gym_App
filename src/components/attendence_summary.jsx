@@ -9,15 +9,15 @@ function AttendenceSummary() {
     const [selectedMember, setSelectedMember] = useState(null);
     const [monthReport, setMonthReport] = useState([]);
     const [dayReport, setDayReport] = useState([]);
+    const role = localStorage.getItem("role");
     const [month, setMonth] = useState(
     new Date().getMonth() + 1
   );
 
 
-  useEffect(() => {
+useEffect(() => {
   fetchAttendance();
-  
-}, []);
+}, [month]);
 
 const fetchAttendance = async () => {
   try {
@@ -33,7 +33,7 @@ const fetchAttendance = async () => {
 
 const fetchDayAttendance = async (userId) => {
   try {
-    const response = await API.get(`/attendance/${userId}/`);
+    const response = await API.get(`/attendance/${userId}/?month=${month}`);
    setDayReport(response.data);
     setShowReport(true);
 
@@ -54,13 +54,15 @@ const filteredAttendance = monthReport.filter(
         <nav className="navbar">
                 <div className="logo-section">
                 <img src={logo}/>
-                <h2>Admin</h2>
+                <h2>{role}</h2>
                 </div>
                 <ul>
-                <li><a href="/admin">Dashboard</a></li>
+                <li><a href={role==="Trainer"? "/trainer" : "admin" }>Dashboard</a></li>
           <li><a href="/attendencesummary">Attendance</a></li>
           <li><a href="/Activity">Activity</a></li>
+           {role !== "Trainer" && (
           <li><a href="/feessummary">Fee</a></li>
+           )}
                 </ul>
                 
               </nav>
@@ -100,7 +102,7 @@ const filteredAttendance = monthReport.filter(
         <th>Attendance %</th>
         <th>Current Streak</th>
         <th>STATUS</th>
-        <th>details</th>
+        <th>Details</th>
       </tr>
     </thead>
 
@@ -126,7 +128,7 @@ const filteredAttendance = monthReport.filter(
           <td><button className="save-btn" onClick={() => {
       setSelectedMember(member);
     fetchDayAttendance(member.user_id);
-    }}>day waise</button></td>
+    }}>Day Waise</button></td>
         </tr>
       ))}
     </tbody>

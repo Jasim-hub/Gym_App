@@ -9,19 +9,25 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import FeeSummary from './components/feessummary';
 import Activity from './components/Activity';
 import MembershipProtected from './components/membershipProtected';
+import TrainerDashboard from './components/trainer_dhashbord';
+
+
 function App() {
   
   return (
   <Router>
   <Routes>
     <Route path="/" element={<Login />}/>
-    <Route path="/home" element={  <MembershipProtected><Home /></MembershipProtected>}/>
+    <Route path="/home" element={ <Home />}/>
         <Route path="/fee" element={<FeeManagement />}/>
         <Route path="/attendence" element={  <MembershipProtected><AttendenceManagement /></MembershipProtected>}/>
         <Route path="/admin" element={  <AdminDashboard />}/>
         <Route path="/attendencesummary" element={<AttendenceSummary />}/>
         <Route path="/activity" element={<Activity />}/>
         <Route path="/feessummary" element={<FeeSummary />}/>
+        <Route path="/trainer" element={<TrainerDashboard />}/>
+        
+
   </Routes>
 </Router>
   

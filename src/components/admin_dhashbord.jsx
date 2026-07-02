@@ -248,7 +248,7 @@ const filteredMembers = member.filter((members) =>
         </div>
 
         <div className="dashboard-card">
-          <h3>Active Plans</h3>
+          <h3>Active Members</h3>
           <h2>{totalActiveMembers}</h2>
         </div>
 
@@ -509,7 +509,7 @@ const filteredMembers = member.filter((members) =>
       <p><strong>Email:</strong> {selectedMember.email}</p>
       <p><strong>Date of Brith:</strong> {selectedMember.date_of_birth}</p>
       <p><strong>Gender:</strong> {selectedMember.gender}</p>
-      {/* <p><strong>Status:</strong> {selectedMember.status}</p> */}
+      <p><strong>Status:</strong> {selectedMember.status}</p>
       <p><strong>Joined:</strong> {selectedMember.joined_date}</p>
 
       <button

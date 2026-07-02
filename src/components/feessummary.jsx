@@ -2,12 +2,16 @@ import './admin.css';
 import logo from './assets/logo.jpeg';
 import { useState, useEffect} from 'react';
 import API from './api';
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 function FeeSummary() {
     const [search, setSearch] = useState("");
     const [showPopup, setShowPopup] = useState(false);
     const [feeData, setFeeData] = useState([]);
     const [alertMessage, setAlertMessage] = useState("");
+    const [showView, setShowView] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
     const [showAlert, setShowAlert] = useState(false);
     const [paymentData, setPaymentData] = useState({
   user_id: "",
@@ -120,7 +124,21 @@ console.log(feeData)
 const filteredMembers = feeData.filter((member) =>
   member.name.toLowerCase().includes(search.toLowerCase()) 
   );
+const downloadFeeReportPDF = async () => {
+  const report = document.getElementById("fee-report");
 
+  const canvas = await html2canvas(report);
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("p", "mm", "a4");
+
+  const imgWidth = 210;
+  const pageHeight = 297;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+  pdf.save(`${selectedMember.name}-Fee-report.pdf`);
+};
     return(
         <>
         <nav className="navbar">
@@ -171,12 +189,13 @@ const filteredMembers = feeData.filter((member) =>
         <th>Payment ID</th>
         <th>Name</th>
         <th>Amount</th>
-        <th>plan</th>
+        <th>Plan</th>
         <th>Start Date</th>
         <th>End Date</th>
         <th>Remaining days</th>
         <th>Method</th>
         <th>Status</th>
+        <th></th>
       </tr>
     </thead>
 
@@ -207,6 +226,10 @@ const filteredMembers = feeData.filter((member) =>
   >
     {member.status}
   </span></td>
+  <td><button className="save-btn" onClick={() => {
+    setSelectedMember(member);
+    setShowView(true);
+      }}>View</button></td>
             </tr>
       ))}
     </tbody>
@@ -300,6 +323,59 @@ const filteredMembers = feeData.filter((member) =>
   </div>
 )}
 
+{showView && selectedMember && (
+  <div className="popup-overlay">
+    <div className="viewpopup-card">
+
+      <h2>Fee Details</h2>
+ 
+
+      <p><strong>User ID:</strong> {selectedMember.user_id}</p>
+      <p><strong>Name:</strong> {selectedMember.name}</p>
+      <p><strong>Phone:</strong> {selectedMember.phone}</p>
+      <p><strong>Payment ID:</strong> {selectedMember.payment_id}</p>
+      <p><strong>Plan:</strong> {selectedMember.plan}</p>
+      <p><strong>Amount:</strong> {selectedMember.amount}</p>
+      <p><strong>Payment Date:</strong> {selectedMember.payment_date}</p>
+      <p><strong>Due Date:</strong> {selectedMember.expiry_date}</p>
+      <p><strong>Payment Mode:</strong> {selectedMember.payment_mode}</p>
+            <div className="popup-buttons">
+            <button
+        className="save-btn"
+        onClick={() => setShowView(false)}
+      >
+        Close
+      </button>
+            <button
+        className="save-btn"
+        onClick={downloadFeeReportPDF}
+      >
+        Print
+      </button>
+</div>
+    </div>
+  </div>
+)}
+{selectedMember && (
+<div id="fee-report" className="pdf-report hidden-pdf">
+  <h2>Infinity Wellness Hub - Fee Report</h2>
+    <h4>{selectedMember.name} Fee Report</h4>
+    <div className="report-card">
+        <p><strong>User ID:</strong> {selectedMember.user_id}</p>
+      <p><strong>Name:</strong> {selectedMember.name}</p>
+      <p><strong>Phone:</strong> {selectedMember.phone}</p>
+      <p><strong>Payment ID:</strong> {selectedMember.payment_id}</p>
+      <p><strong>Plan:</strong> {selectedMember.plan}</p>
+      <p><strong>Amount:</strong> ₹{selectedMember.amount}</p>
+      <p><strong>Payment Date:</strong> {selectedMember.payment_date}</p>
+      <p><strong>Due Date:</strong> {selectedMember.expiry_date}</p>
+      <p><strong>Payment Mode:</strong> {selectedMember.payment_mode}</p>
+</div>
+ <div className="print-footer">
+    <p>Generated on: {new Date().toLocaleDateString()}</p>
+    <p>© 2026 Infinity Wellness Hub. All Rights Reserved.</p>
+  </div>
+</div>)}
       </>
 
 

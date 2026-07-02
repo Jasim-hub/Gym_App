@@ -119,15 +119,21 @@ setShowAlert(true);
       loginData.user_id === "admin" &&
       loginData.password === "admin123"
     ) {
-      localStorage.setItem(
-        "adminLogin",
-        "true"  
-      );
+      localStorage.setItem("role", "Admin");
 
       navigate("/admin");
  
 
-  } else {
+  
+  }
+  if (loginData.user_id === "trainer" &&
+      loginData.password === "trainer123") {
+        localStorage.setItem("role", "Trainer");
+
+      navigate("/trainer");
+    
+  }
+   else {
 
    try {
     const response = await API.post("/login/", loginData);

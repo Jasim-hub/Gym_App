@@ -11,6 +11,7 @@ const [selectedDay, setSelectedDay] = useState("");
 const [AddActivity, setAddActivity] = useState(false);
 const [activity, setActivity] = useState([]);
 const fileRef = useRef(null);
+const role = localStorage.getItem("role");
 const [formData, setFormData] =
 useState({
   day: "",
@@ -112,14 +113,16 @@ const filteredActivities = activity.filter(
 <nav className="navbar">
                 <div className="logo-section">
                 <img src={logo}/>
-                <h2>Admin</h2>
+                <h2>{role}</h2>
                 </div>
                 
                 <ul>
-                  <li><a href="/admin">Dashboard</a></li>
+                  <li><a href={role==="Trainer" ? "/trainer":"/admin" }>Dashboard</a></li>
           <li><a href="/attendencesummary">Attendance</a></li>
           <li><a href="/Activity">Activity</a></li>
+           {role !== "Trainer" && (
           <li><a href="/feessummary">Fee</a></li>
+           )}
           <select value={selectedDay} className="gender-select"
   onChange={(e) => setSelectedDay(e.target.value)}>
       <option value="">Select a Day</option>
