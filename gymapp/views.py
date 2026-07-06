@@ -3,13 +3,16 @@ from rest_framework.views import APIView
 import razorpay
 from django.conf import settings
 from rest_framework.response import Response
-from .models import Member, Attendance, Activity, Payment
+from .models import Member, Attendance, Activity, Payment, MemberExercise
 from rest_framework.decorators import api_view
 from dateutil.relativedelta import relativedelta
 from django.core.mail import send_mail
-
-
-
+import calendar
+from io import BytesIO
+from django.core.mail import EmailMessage
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from rest_framework import status
 from .serializers import MemberSerializer, AttendanceSerializer, ActivitySerializer
 from datetime import date, timedelta
 from datetime import datetime
@@ -134,16 +137,27 @@ class CheckOutView(APIView):
 class AttendanceHistoryView(APIView):
 
     def get(self, request, user_id):
-
         try:
+            member = Member.objects.get(user_id=user_id)
 
-            member = Member.objects.get(
-                user_id=user_id
-            )
+            month = request.GET.get("month")
+            year = request.GET.get("year")
 
             attendance = Attendance.objects.filter(
                 member=member
-            ).order_by("-date")
+            )
+
+            if month:
+                attendance = attendance.filter(
+                    date__month=int(month)
+                )
+
+            if year:
+                attendance = attendance.filter(
+                    date__year=int(year)
+                )
+
+            attendance = attendance.order_by("-date")
 
             serializer = AttendanceSerializer(
                 attendance,
@@ -164,34 +178,38 @@ class AttendanceListView(generics.ListAPIView):
 class MonthlyReportView(APIView):
 
     def get(self, request):
-
-        members = Member.objects.all()
-
-        data = []
+        month = request.GET.get("month")
+        year = request.GET.get("year")
 
         today = date.today()
-        days_passed = today.day
+
+        month = int(month) if month else today.month
+        year = int(year) if year else today.year
+
+        if month == today.month and year == today.year:
+            days_passed = today.day
+        else:
+            days_passed = calendar.monthrange(year, month)[1]
+
+        members = Member.objects.all()
+        data = []
 
         for member in members:
-
             attendance = Attendance.objects.filter(
                 member=member,
-                date__month=today.month,
-                date__year=today.year
+                date__month=month,
+                date__year=year
             )
 
             present_days = attendance.count()
             absent_days = days_passed - present_days
-            attendance_percentage = 0
-            if days_passed > 0:
-                attendance_percentage = round(
-                    (present_days / days_passed) * 100,
-                    2
-    )
-            if attendance_percentage >= 50:
-                status = "Active"
-            else:
-             status = "Inactive"
+
+            attendance_percentage = round(
+                (present_days / days_passed) * 100,
+                2
+            ) if days_passed > 0 else 0
+
+            status = "Active" if attendance_percentage >= 50 else "Inactive"
 
             data.append({
                 "user_id": member.user_id,
@@ -200,11 +218,12 @@ class MonthlyReportView(APIView):
                 "absent_days": absent_days,
                 "attendance_percentage": attendance_percentage,
                 "current_streak": 0,
-                 "status": status,
+                "status": status,
+                "month": month,
+                "year": year,
             })
 
-        return Response(data)
-    
+        return Response(data)    
 class ActivityListCreateView(
     generics.ListCreateAPIView
 ):
@@ -314,7 +333,7 @@ def save_payment(request):
             razorpay_payment_id=razorpay_payment_id,
             razorpay_signature=razorpay_signature
         )
-
+    send_payment_receipt_email(payment)
     return Response({
         "message": "Payment Saved Successfully",
         "plan": payment.plan,
@@ -413,3 +432,187 @@ Infinity Wellness Hub
 
         payment.expiry_warning_sent = True
         payment.save()
+
+
+def send_payment_receipt_email(payment):
+    buffer = BytesIO()
+
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+
+    pdf.setFont("Helvetica-Bold", 18)
+    pdf.drawCentredString(width / 2, height - 60, "Infinity Wellness Hub")
+
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawCentredString(width / 2, height - 90, "Membership Payment Receipt")
+
+    pdf.setFont("Helvetica", 11)
+
+    y = height - 140
+
+    details = [
+        ("Member Name", payment.member.name),
+        ("User ID", payment.member.user_id),
+        ("Plan", payment.plan),
+        ("Amount", f"Rs. {payment.amount}"),
+        ("Payment Method", payment.payment_mode),
+        ("Payment Date", str(payment.payment_date.date())),
+        ("Expiry Date", str(payment.expiry_date)),
+        ("Status", payment.status),
+    ]
+
+    for label, value in details:
+        pdf.drawString(80, y, f"{label}:")
+        pdf.drawString(230, y, str(value))
+        y -= 25
+
+    pdf.setFont("Helvetica", 10)
+    pdf.drawCentredString(
+        width / 2,
+        60,
+        "Thank you for choosing Infinity Wellness Hub."
+    )
+
+    pdf.save()
+
+    buffer.seek(0)
+
+    email = EmailMessage(
+        subject="Infinity Wellness Hub - Payment Receipt",
+        body=f"""
+Dear {payment.member.name},
+
+Your membership payment has been recorded successfully.
+
+Please find your payment receipt attached.
+
+Thank you,
+Infinity Wellness Hub
+""",
+        from_email=settings.EMAIL_HOST_USER,
+        to=[payment.member.email],
+    )
+
+    email.attach(
+        f"{payment.member.name}-payment-receipt.pdf",
+        buffer.getvalue(),
+        "application/pdf"
+    )
+
+    email.send()
+    print("Sending email to:", payment.member.email)
+
+
+
+
+
+class AssignWorkoutView(APIView):
+
+    def post(self, request):
+
+       
+        member_id = request.data.get("member_id")
+        member_day = request.data.get("member_day")
+        workout_day = request.data.get("workout_day")
+
+        try:
+            
+            member = Member.objects.get(user_id=member_id)
+            if workout_day and workout_day.strip() != "":
+                duplicate_workout = MemberExercise.objects.filter(
+                    member=member,
+                    workout_day=workout_day
+                ).exclude(
+                    member_day=member_day
+                ).exists()
+
+                if duplicate_workout:
+                    return Response({
+                        "error": f"{workout_day} is already assigned for this member in this week."
+                    }, status=400)
+
+            MemberExercise.objects.update_or_create(
+                member=member,
+                member_day=member_day,
+                defaults={
+                    "trainer": "Trainer",
+                    "workout_day": workout_day
+                }
+            )
+
+            return Response({
+                "message": "Workout assigned successfully."
+            })
+
+        except Member.DoesNotExist:
+            return Response(
+                {"error": "Member or Trainer not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+
+class MemberWorkoutView(APIView):
+
+    def get(self, request, user_id):
+        today = date.today().strftime("%A")
+
+        try:
+            plan = MemberExercise.objects.get(
+                member__user_id=user_id,
+                member_day=today
+            )
+
+            activities = Activity.objects.filter(
+                workout_day=plan.workout_day
+            )
+
+            data = []
+
+            for item in activities:
+                data.append({
+                    "exercise_name": item.exercise_name,
+                    "sets": item.sets,
+                    "description": item.description,
+                    "image": request.build_absolute_uri(item.image.url) if item.image else None,
+                })
+
+            return Response({
+                "member_day": today,
+                "workout_day": plan.workout_day,
+                "activities": data
+            })
+
+        except MemberExercise.DoesNotExist:
+            return Response({
+                "member_day": today,
+                "workout_day": "",
+                "activities": []
+            })
+class AllMemberWorkoutTableView(APIView):
+
+    def get(self, request):
+        members = Member.objects.all()
+
+        data = []
+
+        for member in members:
+            plans = MemberExercise.objects.filter(member=member)
+
+            member_data = {
+                "user_id": member.user_id,
+                "name": member.name,
+                "Monday": "",
+                "Tuesday": "",
+                "Wednesday": "",
+                "Thursday": "",
+                "Friday": "",
+                "Saturday": "",
+            }
+
+            for plan in plans:
+                member_data[plan.member_day] = plan.workout_day
+
+            data.append(member_data)
+
+        return Response(data)

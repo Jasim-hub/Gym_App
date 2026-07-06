@@ -77,13 +77,13 @@ WSGI_APPLICATION = 'Gymbackend.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'gymdb',
-        'USER': 'root',
-        'PASSWORD': 'Jasim@2003',
-        'HOST': 'localhost',
-        'PORT': '3306',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "Gymdb",
+        "USER": "postgres",
+        "PASSWORD": "jasim",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 
@@ -137,4 +137,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 EMAIL_HOST_USER = "jasimr796@gmail.com"
-EMAIL_HOST_PASSWORD = "tpyy tgnm qnst tszh"
+EMAIL_HOST_PASSWORD = "tpyy tgnm qnst tszh" \
+""

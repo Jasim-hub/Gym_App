@@ -190,3 +190,43 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"{self.member.name} - {self.plan}"
+    
+
+class MemberExercise(models.Model):
+
+    DAY_CHOICES = [
+        ("Monday", "Monday"),
+        ("Tuesday", "Tuesday"),
+        ("Wednesday", "Wednesday"),
+        ("Thursday", "Thursday"),
+        ("Friday", "Friday"),
+        ("Saturday", "Saturday"),
+        ("Sunday", "Sunday"),
+    ]
+
+    member_day = models.CharField(
+        max_length=20,
+        choices=DAY_CHOICES,
+        default="Monday"
+    )
+
+    workout_day = models.CharField(
+        max_length=50,
+        default="Chest Day"
+    )
+
+    trainer = models.CharField(
+        max_length=100,
+        default="Trainer"
+    )
+
+    member = models.ForeignKey(
+        Member,
+        on_delete=models.CASCADE,
+        related_name="assigned_exercises"
+    )
+
+    assigned_date = models.DateField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("member", "member_day")
