@@ -7,6 +7,7 @@ import API from "./api";
 function AttendenceManagement() {
  const [showAttendance, setShowAttendance] = useState(false);
  const [workouts, setWorkouts] = useState([]);
+ const [workoutDay, setWorkoutDay] = useState("");
   const [inTime, setInTime] = useState("");
   const [outTime, setOutTime] = useState("");
   const [totalHours, setTotalHours] = useState("");
@@ -198,8 +199,9 @@ const fetchAttendanceReport = async () => {
 
 const fetchActivity = async () => {
   try {
-    const response = await API.get("/activity/view/");
-   setWorkouts(response.data);
+    const response = await API.get(`/member-workout/${member.user_id}/`);
+   setWorkouts(response.data.activities);
+   setWorkoutDay(response.data.workout_day);
    console.log(response.data);
 
   } catch (error) {
@@ -209,9 +211,7 @@ const fetchActivity = async () => {
  
 };
 
-const todayWorkouts = workouts.filter(
-  (item) => item.day === day
-);
+const todayWorkouts = workoutDay
     return (<>
 <nav className="navbar">
         <div className="logo-section">
@@ -384,12 +384,10 @@ const todayWorkouts = workouts.filter(
       </div>
     </section>
       <section className="workout-section">
-    <h2>Today's Fitness Mission: {todayWorkouts.length > 0
-    ? todayWorkouts[0].workout_day
-    : "Rest Day"}</h2>
+    <h2>Today's Fitness Mission:  {workoutDay || "Rest Day"}</h2>
 
     <div className="exercise-grid">
-      {todayWorkouts.length > 0 ? (todayWorkouts.map((exercise, index) => (
+      {workouts.length > 0 ? (workouts.map((exercise, index) => (
         <div key={index} className="exercise-card">
           <img
             src={exercise.image}

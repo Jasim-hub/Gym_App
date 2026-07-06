@@ -86,6 +86,7 @@ body{
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
+  
   cursor: pointer;
 width: 180px;
 height: 50px;
@@ -209,6 +210,27 @@ height: 50px;
 }
 
 .member-table tr:hover{
+  background:#181818;
+}
+.assign-table{
+  width:100%;
+  border-collapse:collapse;
+  background:#111;
+  border-radius:15px;
+  overflow:hidden;
+  margin-top: 180px;
+}
+.assign-table th{  text-align:left;
+  padding:20px;
+  color:#888;
+  border-bottom:1px solid #222;
+}
+.assign-table td{padding:20px;
+      padding:20px;
+  border-bottom:1px solid #1f1f1f;
+  color:white;
+}
+.assign-table tr:hover{
   background:#181818;
 }
 
@@ -520,7 +542,7 @@ position: fixed;
 }
 
 .report-card {
-  border: 2px solid #080808;
+  border: 2px solid #ff6600;
   border-radius: 10px;
   padding: 20px;
 }
@@ -549,7 +571,10 @@ position: fixed;
   padding: 10px;
 }
 .hidden-pdf {
-  position: absolute;
-  left: -9999px;
-  top: 0;
+    position: fixed;
+    top: -10000px;
+    left: -10000px;
+    background: white;
+    width: 800px;
+    padding: 30px;
 }
