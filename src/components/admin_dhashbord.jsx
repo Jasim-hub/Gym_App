@@ -26,6 +26,17 @@ const [editData, setEditData] = useState({});
   password: "",
   profile_image: null,
 });
+const formatDate = (date) => {
+  if (!date) return "";
+
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${day}-${month}-${year}`;
+};
 const openEditMember = (member) => {
   setEditData(member);
   setShowEdit(true);
@@ -298,7 +309,7 @@ const filteredMembers = member.filter((members) =>
             {members.plan}
           </span>
         </td>
-        <td>{members.joined_date}</td>
+        <td>{formatDate(members.joined_date)}</td>
         <td>
          <span
     className={`status ${
@@ -507,10 +518,10 @@ const filteredMembers = member.filter((members) =>
       <p><strong>Name:</strong> {selectedMember.name}</p>
       <p><strong>Phone:</strong> {selectedMember.phone}</p>
       <p><strong>Email:</strong> {selectedMember.email}</p>
-      <p><strong>Date of Brith:</strong> {selectedMember.date_of_birth}</p>
+      <p><strong>Date of Brith:</strong> {formatDate(selectedMember.date_of_birth)}</p>
       <p><strong>Gender:</strong> {selectedMember.gender}</p>
       <p><strong>Status:</strong> {selectedMember.status}</p>
-      <p><strong>Joined:</strong> {selectedMember.joined_date}</p>
+      <p><strong>Joined:</strong> {formatDate(selectedMember.joined_date)}</p>
 
       <button
         className="save-btn"

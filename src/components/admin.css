@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
 *{
     margin:0;
   padding:0;
@@ -5,7 +6,12 @@
 font-family: 'Times New Roman', Times, serif;
 scroll-behavior: smooth;
 
+
 }
+button{
+  font-family: 'Montserrat', sans-serif;
+}
+
 body{
     background-color: #111111;
     background-image:
@@ -358,6 +364,15 @@ position: fixed;
   padding:12px;
   border-radius:10px;
   cursor:pointer;
+}
+.table-btn{
+margin-top: 0;  
+  background:#ff6600;
+  color:white;
+  border:none;
+   border-radius:10px;
+  cursor:pointer;
+  justify-content: center;
 }
 
 .phone-group{

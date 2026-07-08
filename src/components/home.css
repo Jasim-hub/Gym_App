@@ -1,9 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
 *{
     margin:0;
   padding:0;
   box-sizing:border-box;
 font-family: 'Times New Roman', Times, serif;
 scroll-behavior: smooth;
+letter-spacing: .8px;
 
 }
 body{
@@ -313,6 +315,7 @@ height: 50px;
   margin-top: 10px;
   text-align: left;
   max-width: 300px;
+  letter-spacing: 1.2px;
 }
 @keyframes slideLeft1{
   from{

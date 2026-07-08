@@ -31,6 +31,7 @@ const [weeklyData, setWeeklyData] = useState([]);
   const today = new Date().toDateString();
   
 }, []);
+
 const handleCheckIn = async () => {
   try {
     const member = JSON.parse(
@@ -130,7 +131,11 @@ const getTodayAttendance = async () => {
     if (todayAttendance) {
       setInTime(todayAttendance.check_in?.split(".")[0] || "");
       setOutTime(todayAttendance.check_out?.split(".")[0] || "");
-      setTotalHours(todayAttendance.total_hours?.split(".")[0] || "");
+      setTotalHours(
+  todayAttendance.total_hours
+    ? todayAttendance.total_hours.split(":").slice(0, 2).join(":")
+    : "00:00"
+);
     } else {
       setInTime("");
       setOutTime("");
@@ -303,6 +308,10 @@ const todayWorkouts = workoutDay
           <div className="metric-box">
             <p>Avg. Daily Attendance</p>
             <h2>{avgAttendance}%</h2>
+          </div>
+          <div className="metric-box">
+            <p>Today Workout Hour</p>
+            <h2>{totalHours || "-"}</h2>
           </div>
 
                   </div>

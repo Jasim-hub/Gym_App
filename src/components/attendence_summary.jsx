@@ -30,7 +30,17 @@ const fetchAttendance = async () => {
     
   }
 };
+const formatDate = (date) => {
+  if (!date) return "";
 
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${day}-${month}-${year}`;
+};
 const fetchDayAttendance = async (userId) => {
   try {
     const response = await API.get(`/attendance/${userId}/?month=${month}`);
@@ -125,7 +135,7 @@ const filteredAttendance = monthReport.filter(
     {member.status}
   </span>
         </td>
-          <td><button className="save-btn" onClick={() => {
+          <td><button className="table-btn" onClick={() => {
       setSelectedMember(member);
     fetchDayAttendance(member.user_id);
     }}>Day Waise</button></td>
@@ -153,7 +163,7 @@ const filteredAttendance = monthReport.filter(
         <tbody>
           {dayReport.map((item,index)=>(
             <tr key={index}>
-              <td>{item.date}</td>
+              <td>{formatDate(item.date)}</td>
               <td>{item.check_in?.split(".")[0]}</td>
               <td>{item.check_out?.split(".")[0]}</td>
               <td>{item.total_hours?.split(".")[0]}</td>

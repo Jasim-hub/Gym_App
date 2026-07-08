@@ -22,6 +22,17 @@ function FeeSummary() {
  
 
 });
+const formatDate = (date) => {
+  if (!date) return "";
+
+  const d = new Date(date);
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+
+  return `${day}-${month}-${year}`;
+};
 const getValidity = (plan) => {
   if (plan === "Basic") return 1;
   if (plan === "Premium") return 6;
@@ -213,8 +224,8 @@ const downloadFeeReportPDF = async () => {
     : member.plan === "Elite" ? "elite" :""
 }>
             {member.plan}</span></td>
-          <td>{member.payment_date}</td>
-          <td>{member.expiry_date}</td>
+          <td>{formatDate(member.payment_date)}</td>
+          <td>{formatDate(member.expiry_date)}</td>
           <td>{member.remaining_days} Days</td>
           <td>{member.payment_mode}</td>
           <td><span
@@ -226,7 +237,7 @@ const downloadFeeReportPDF = async () => {
   >
     {member.status}
   </span></td>
-  <td><button className="save-btn" onClick={() => {
+  <td><button className="table-btn" onClick={() => {
     setSelectedMember(member);
     setShowView(true);
       }}>View</button></td>
@@ -336,8 +347,8 @@ const downloadFeeReportPDF = async () => {
       <p><strong>Payment ID:</strong> {selectedMember.payment_id}</p>
       <p><strong>Plan:</strong> {selectedMember.plan}</p>
       <p><strong>Amount:</strong> {selectedMember.amount}</p>
-      <p><strong>Payment Date:</strong> {selectedMember.payment_date}</p>
-      <p><strong>Due Date:</strong> {selectedMember.expiry_date}</p>
+      <p><strong>Payment Date:</strong> {formatDate(selectedMember.payment_date)}</p>
+      <p><strong>Due Date:</strong> {formatDate(selectedMember.expiry_date)}</p>
       <p><strong>Payment Mode:</strong> {selectedMember.payment_mode}</p>
             <div className="popup-buttons">
             <button
@@ -367,12 +378,12 @@ const downloadFeeReportPDF = async () => {
       <p><strong>Payment ID:</strong> {selectedMember.payment_id}</p>
       <p><strong>Plan:</strong> {selectedMember.plan}</p>
       <p><strong>Amount:</strong> ₹{selectedMember.amount}</p>
-      <p><strong>Payment Date:</strong> {selectedMember.payment_date}</p>
-      <p><strong>Due Date:</strong> {selectedMember.expiry_date}</p>
+      <p><strong>Payment Date:</strong> {formatDate(selectedMember.payment_date)}</p>
+      <p><strong>Due Date:</strong> {formatDate(selectedMember.expiry_date)}</p>
       <p><strong>Payment Mode:</strong> {selectedMember.payment_mode}</p>
 </div>
  <div className="print-footer">
-    <p>Generated on: {new Date().toLocaleDateString()}</p>
+    <p>Generated on: {formatDate(new Date().toLocaleDateString())}</p>
     <p>© 2026 Infinity Wellness Hub. All Rights Reserved.</p>
   </div>
 </div>)}
