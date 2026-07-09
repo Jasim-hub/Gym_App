@@ -120,7 +120,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://gym-app-six-weld.vercel.app/",
+    "https://gym-app-six-weld.vercel.app",
 ]
 RAZORPAY_KEY_ID = "rzp_test_T1r8eBwL1LYwN5"
 RAZORPAY_KEY_SECRET = "9REF4HbiYZSwlVdGDZDptOjr"
