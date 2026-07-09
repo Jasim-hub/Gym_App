@@ -117,8 +117,10 @@ USE_I18N = True
 STATIC_URL = 'static/'
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-CORS_ALLOW_ALL_ORIGINS = True
 
+CORS_ALLOWED_ORIGINS = [
+    "https://gym-app-six-weld.vercel.app/",
+]
 RAZORPAY_KEY_ID = "rzp_test_T1r8eBwL1LYwN5"
 RAZORPAY_KEY_SECRET = "9REF4HbiYZSwlVdGDZDptOjr"
 
