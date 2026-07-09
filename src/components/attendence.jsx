@@ -220,7 +220,7 @@ const todayWorkouts = workoutDay
     return (<>
 <nav className="navbar">
         <div className="logo-section">
-        <img src={`https://gym-app-66of.onrender.com${member.profile_image}`} alt='profile'/>
+        <img src={member.profile_image} alt='profile'/>
         <h2>{member.name}</h2>
         </div>
         <ul>

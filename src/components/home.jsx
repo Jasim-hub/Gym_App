@@ -68,7 +68,7 @@ useEffect(() => {
   const interval = setInterval(() => {
     setCurrent((prev) => (prev + 1) % trainers.length);
   }, 5000); // Change every 4 seconds
-
+console.log(member)
   return () => clearInterval(interval);
 }, []);
   return (
@@ -76,7 +76,7 @@ useEffect(() => {
       
       <nav className="navbar">
         <div className="logo-section">
-        <img src={`https://gym-app-66of.onrender.com${member.profile_image}`} alt='profile'/>
+        <img src={member.profile_image} alt='profile'/>
         <h2>{member.name}</h2>
         </div>
         <ul>
