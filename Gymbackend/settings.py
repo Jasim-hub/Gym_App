@@ -79,16 +79,16 @@ WSGI_APPLICATION = 'Gymbackend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "Gymdb",
-        "USER": "postgres",
-        "PASSWORD": "jasim",
-        "HOST": "localhost",
-        "PORT": "5432",
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "Gymdb",
+#         "USER": "postgres",
+#         "PASSWORD": "jasim",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+#     }
+# }
 
 
 # Password validation
@@ -142,9 +142,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "jasimr796@gmail.com"
 EMAIL_HOST_PASSWORD = "tpyy tgnm qnst tszh" \
 ""
-import dj_database_url
-from pathlib import Path
 import os
+import dj_database_url
+
 DEBUG = False
 
 ALLOWED_HOSTS = [
@@ -156,19 +156,24 @@ ALLOWED_HOSTS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    # other middleware...
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600
+        default=f"postgres://postgres:jasim@localhost:5432/Gymdb",
+        conn_max_age=600,
     )
 }
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
+MEDIA_ROOT = BASE_DIR / "media"
