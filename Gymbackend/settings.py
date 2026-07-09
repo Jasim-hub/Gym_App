@@ -139,3 +139,31 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "jasimr796@gmail.com"
 EMAIL_HOST_PASSWORD = "tpyy tgnm qnst tszh" \
 ""
+import os
+import dj_database_url
+
+DEBUG = False
+
+ALLOWED_HOSTS = [
+    ".onrender.com",
+    "127.0.0.1",
+    "localhost",
+]
+
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    # other middleware...
+]
+
+DATABASES = {
+    "default": dj_database_url.config(
+        default=os.environ.get("DATABASE_URL")
+    )
+}
+
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
