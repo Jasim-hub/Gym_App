@@ -47,7 +47,7 @@ INSTALLED_APPS = [
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-
+import os
 
 
 cloudinary.config(
