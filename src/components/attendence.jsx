@@ -275,11 +275,11 @@ const todayWorkouts = workoutDay
             </div>
 
             {!inTime ? (
-              <button onClick={handleCheckIn}>
+              <button className="check" onClick={handleCheckIn}>
                 Check In
               </button>
             ) : !outTime ? (
-              <button onClick={handleCheckOut}>
+              <button className="check" onClick={handleCheckOut}>
                 Check Out
               </button>
               

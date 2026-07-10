@@ -653,6 +653,20 @@ line-height: 40px;
 .close-btn:hover{
   color:#ff6600;
 }
+.check
+{
+  
+  margin-bottom: 20px;
+  right:15px;
+
+  background:none;
+  border:none;
+
+  color:white;
+  font-size:22px;
+  cursor:pointer;
+}
+
 
 .renew-btn{
   margin-top:15px;
