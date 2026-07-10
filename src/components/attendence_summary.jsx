@@ -66,7 +66,8 @@ const filteredAttendance = monthReport.filter(
                 <img src={logo}/>
                 <h2>{role}</h2>
                 </div>
-                <ul>
+
+                <ul className="nav-list">
                 <li><a href={role==="Trainer"? "/trainer" : "admin" }>Dashboard</a></li>
           <li><a href="/attendencesummary">Attendance</a></li>
           <li><a href="/Activity">Activity</a></li>

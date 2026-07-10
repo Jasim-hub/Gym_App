@@ -10,17 +10,17 @@ import diet from './assets/dite.jpeg';
 import zumba from './assets/zumba.jpeg';
 import yoga from './assets/yoga.jpeg';
 import { useEffect, useState } from "react";
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import API from './api';
-
+import Footer from './footer';
 
 
 function Home() {
 const member = JSON.parse(
   localStorage.getItem("member")
 );
-
+const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
   const reveal = () => {
@@ -41,6 +41,7 @@ const member = JSON.parse(
 
   return () => window.removeEventListener("scroll", reveal);
 }, []);
+
 // Trainer details
 const trainers = [
   {
@@ -79,11 +80,20 @@ console.log(member)
         <img src={member.profile_image} alt='profile'/>
         <h2>{member.name}</h2>
         </div>
-        <ul>
-          <li><a href="#home">Home</a></li>
-          <li><a href="/attendence">Attendance</a></li>
-          <li><a href="/fee">Fees</a></li>
-          <li><a href="#contact">Contact</a></li>
+        <a
+   
+    className="menu-toggle"
+    onClick={() => setMenuOpen((current) => !current)}
+   
+  >
+    {menuOpen ? <i className="fa-solid fa-xmark"></i>
+ : <i className="fa-solid fa-bars"></i>}
+  </a>
+        <ul className={`nav-links ${menuOpen ? "open" : ""}`}>
+          <li><a href="#home" onClick={() => setMenuOpen(false)}>Home</a></li>
+          <li><a href="/attendence" onClick={() => setMenuOpen(false)}>Attendance</a></li>
+          <li><a href="/fee" onClick={() => setMenuOpen(false)}>Fees</a></li>
+          <li><a href="#contact" onClick={() => setMenuOpen(false)}>Contact</a></li>
         </ul>
         
       </nav>
@@ -218,44 +228,8 @@ console.log(member)
  </div>
    </div>
    </section>
-<footer className="footer">
-  <div className="footer-container">
 
-    <div className="footer-box">
-      <h3>Infinity Wellness Hub</h3>
-      <p>Transform your body and mind with expert training and modern fitness programs.</p>
-      <div className="footer-logo">
-      <i className="fa-brands fa-whatsapp"></i>
-      <i className="fa-brands fa-instagram"></i>
-      <i className="fa-brands fa-youtube"></i>
-      <i className="fa-brands fa-facebook"></i>
-      </div>
-    </div>
-
-    <div className="footer-box">
-      <h3>Quick Links</h3>
-      <ul>
-        <li><a href="#home">Home</a></li>
-        <li><a href="#">Classes</a></li>
-        <li><a href="#">Trainers</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </div>
-
-    <div className="footer-box">
-      <h3>Contact</h3>
-      <p>📍 Trivandrum, Kerala</p>
-      <p>📞 +91 9876543210</p>
-      <p>✉ InfinityWellnessHub@gym.com</p>
-    </div>
-
-  </div>
-
-  <div className="footer-bottom">
-    <p>© 2026 Infinity Wellness Hub. All Rights Reserved.</p>
-  </div>
-</footer>
-  
+  <Footer />
     </div>
   );
 }

@@ -196,7 +196,7 @@ const fetchActivityDay = async () => {
                 <h2>{role}</h2>
                 </div>
                 
-                <ul>
+                <ul className="nav-list">
                   <li><a href={role==="Trainer" ? "/trainer":"/admin" }>Dashboard</a></li>
           <li><a href="/attendencesummary">Attendance</a></li>
           <li><a href="/Activity">Activity</a></li>
@@ -215,7 +215,7 @@ const fetchActivityDay = async () => {
       </select>
                 </ul>
                 <div className="popup-buttons">
-                <button onClick={() => setAddActivity(true)}>Add Activity</button>
+                <button className="navlog-btn" onClick={() => setAddActivity(true)}>Add Activity</button>
                 
                 </div>
               </nav>

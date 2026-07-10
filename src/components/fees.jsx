@@ -9,10 +9,11 @@ import Home from "./home";
 import { Link, useNavigate } from "react-router-dom";
 import API from "./api";
 import logo1 from './assets/logo2.jpeg'
-
+import Footer from "./footer";
 
 
 function FeeManagement() {
+  const [menuOpen, setMenuOpen] = useState(false);
    const [showFee, setShowFee] = useState(false);
    const navigation=useNavigate();
    const [alertMessage, setAlertMessage] = useState("");
@@ -112,13 +113,24 @@ const handlePayment = async (planName, amount, validity,) => {
         <img src={member.profile_image} alt='profile'/>
         <h2>{member.name}</h2>
         </div>
-        <ul>
-          <li><a href="/home">Home</a></li>
-          <li><a href="/attendence">Attendance</a></li>
-          <li><a href="/fee">Fees</a></li>
-          <li><a href="/home#contact">Contact</a></li>
+        <a
+    className="menu-toggle"
+    onClick={() => setMenuOpen((current) => !current)}
+    
+  >
+    {menuOpen ? <i className="fa-solid fa-xmark"></i>
+ : <i className="fa-solid fa-bars"></i>}
+  </a>
+        <ul className={`nav-links ${menuOpen ? "open" : ""}`}>
+          <li><a href="/home" onClick={() => setMenuOpen(false)}>Home</a></li>
+          <li><a href="/attendence" onClick={() => setMenuOpen(false)}>Attendance</a></li>
+          <li><a href="/fee" onClick={() => setMenuOpen(false)}>Fees</a></li>
+          <li><a href="/home#contact" onClick={() => setMenuOpen(false)}>Contact</a></li>
+        <li className="mobile-logout">
+        <button onClick={() => setShowFee(true)}>My Membership</button>
+    </li>
         </ul>
-         <button onClick={() => setShowFee(true)}>
+         <button className="navlogout-btn" onClick={() => setShowFee(true)}>
   My Membership
 </button>
         </nav>
@@ -161,7 +173,7 @@ const handlePayment = async (planName, amount, validity,) => {
 )}
 {membership?.status === "Inactive" && (
   <p className="warning">
-    <i class="fa-solid fa-triangle-exclamation"></i> Your membership has expired. Please renew your plan to access gym features.
+    <i className="fa-solid fa-triangle-exclamation"></i> Your membership has expired. Please renew your plan to access gym features.
   </p>
 )}
 
@@ -245,44 +257,7 @@ const handlePayment = async (planName, amount, validity,) => {
   </div>
 )}
 
-<footer className="footer">
-  <div className="footer-container">
-
-    <div className="footer-box">
-      <h3>Infinity Wellness Hub</h3>
-      <p>Transform your body and mind with expert training and modern fitness programs.</p>
-      <div className="footer-logo">
-      <i className="fa-brands fa-whatsapp"></i>
-      <i className="fa-brands fa-instagram"></i>
-      <i className="fa-brands fa-youtube"></i>
-      <i className="fa-brands fa-facebook"></i>
-      </div>
-    </div>
-
-    <div className="footer-box">
-      <h3>Quick Links</h3>
-      <ul>
-        <li><a href="#home">Home</a></li>
-        <li><a href="#">Classes</a></li>
-        <li><a href="#">Trainers</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </div>
-
-    <div className="footer-box">
-      <h3>Contact</h3>
-      <p>📍 Trivandrum, Kerala</p>
-      <p>📞 +91 9876543210</p>
-      <p>✉ InfinityWellnessHub@gym.com</p>
-    </div>
-
-  </div>
-
-  <div className="footer-bottom">
-    <p>© 2026 Infinity Wellness Hub. All Rights Reserved.</p>
-  </div>
-</footer>
-               
+               <Footer />
     
 </div>
   )

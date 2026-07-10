@@ -212,3 +212,76 @@ body{
   color: white;
   cursor: pointer;
 }
+
+@media (max-width: 768px) {
+  .login-container {
+    min-height: 100vh;
+    height: auto;
+    padding: 30px 15px;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  .login-box {
+    width: 100%;
+    max-width: 420px;
+    padding: 25px 18px;
+    margin: 170px auto;
+    border-radius: 15px;
+  }
+
+  .login-box:hover {
+    transform: none;
+  }
+
+  .login-box h2 {
+    font-size: 26px;
+    margin-bottom: 25px;
+  }
+
+  .login-box input {
+    padding: 12px 5px;
+    margin-bottom: 16px;
+    font-size: 16px;
+  }
+
+  .login-box button {
+    padding: 13px;
+    font-size: 16px;
+  }
+
+  .phone-group {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .phone-group select {
+    width: 75px;
+    flex-shrink: 0;
+  }
+
+  .phone-group input {
+    min-width: 0;
+  }
+
+  .age-gender-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .age-gender-row input,
+  .age-gender-row select {
+    width: 100%;
+    flex: none;
+  }
+
+  .profile-upload input[type="file"] {
+    font-size: 13px;
+  }
+
+  .alert-card {
+    width: calc(100% - 30px);
+    max-width: 350px;
+    padding: 20px;
+  }
+}

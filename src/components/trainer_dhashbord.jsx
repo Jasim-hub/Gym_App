@@ -98,7 +98,7 @@ const filteredMembers = member.filter((members) =>
         <img src={logo}/>
         <h2>Trainer</h2>
         </div>
-        <ul>
+        <ul className="nav-list">
           <li><a href="/trainer">Dashboard</a></li>
           <li><a href="/attendencesummary">Attendance</a></li>
           <li><a href="/Activity">Activity</a></li>

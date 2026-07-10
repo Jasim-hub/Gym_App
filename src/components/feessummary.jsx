@@ -157,7 +157,7 @@ const downloadFeeReportPDF = async () => {
                 <img src={logo}/>
                 <h2>Admin</h2>
                 </div>
-                <ul>
+                <ul className="nav-list">
                 <li><a href="/admin">Dashboard</a></li>
           <li><a href="/attendencesummary">Attendance</a></li>
           <li><a href="/Activity">Activity</a></li>
@@ -197,11 +197,11 @@ const downloadFeeReportPDF = async () => {
   <table>
     <thead>
       <tr>
-        <th>Payment ID</th>
+        <th className="size">Payment ID</th>
         <th>Name</th>
         <th>Amount</th>
         <th>Plan</th>
-        <th>Start Date</th>
+        <th className="date">Start Date</th>
         <th>End Date</th>
         <th>Remaining days</th>
         <th>Method</th>
@@ -213,7 +213,7 @@ const downloadFeeReportPDF = async () => {
     <tbody>
       {filteredMembers.map((member) => (
         <tr key={member.id}>
-          <td>{member.payment_id}</td>
+          <td >{member.payment_id}</td>
           <td>{member.name}</td>
           <td>{member.amount}</td>
           <td><span className={
@@ -224,8 +224,8 @@ const downloadFeeReportPDF = async () => {
     : member.plan === "Elite" ? "elite" :""
 }>
             {member.plan}</span></td>
-          <td>{formatDate(member.payment_date)}</td>
-          <td>{formatDate(member.expiry_date)}</td>
+          <td className="date">{formatDate(member.payment_date)}</td>
+          <td className="date">{formatDate(member.expiry_date)}</td>
           <td>{member.remaining_days} Days</td>
           <td>{member.payment_mode}</td>
           <td><span

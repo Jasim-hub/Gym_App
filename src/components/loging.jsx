@@ -158,7 +158,7 @@ setShowAlert(true);
       membershipRes.data.status === "Expired" ||
       membershipRes.data.status === "Inactive"
     ) {
-      navigate("/fee");
+      navigate("/home");
     } else {
       navigate("/home");
     }} catch (error) {

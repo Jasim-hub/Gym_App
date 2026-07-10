@@ -229,7 +229,7 @@ const filteredMembers = member.filter((members) =>
         <img src={logo}/>
         <h2>Admin</h2>
         </div>
-        <ul>
+        <ul className="nav-list">
           <li><a href="/admin">Dashboard</a></li>
           <li><a href="/attendencesummary">Attendance</a></li>
           <li><a href="/Activity">Activity</a></li>
@@ -255,7 +255,7 @@ const filteredMembers = member.filter((members) =>
         <div className="dashboard-card">
           <h3>Due Payments</h3>
           <h2>{duePayments.length}</h2>
-          <p className="pendingp"><i class="fa-solid fa-triangle-exclamation"></i> pending</p>
+          <p className="pendingp"><i className="fa-solid fa-triangle-exclamation"></i> pending</p>
         </div>
 
         <div className="dashboard-card">
