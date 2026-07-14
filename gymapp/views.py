@@ -616,31 +616,77 @@ class AllMemberWorkoutTableView(APIView):
             data.append(member_data)
 
         return Response(data)
+from datetime import date
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+
+from .models import Member, Payment, Attendance, Activity
+from .serializers import MemberSerializer, ActivitySerializer
+
+
 @api_view(["GET"])
 def dashboard(request):
     user_id = request.GET.get("user_id")
 
-    member = Member.objects.get(user_id=user_id)
+    if not user_id:
+        return Response(
+            {"detail": "user_id is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
-    payment = Payment.objects.filter(
-        member=member,
-        status="Paid"
-    ).order_by("-payment_date").first()
+    try:
+        member = Member.objects.get(user_id=user_id)
+    except Member.DoesNotExist:
+        return Response(
+            {"detail": "Member not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
-    attendance = Attendance.objects.filter(
-        member=member
+    latest_payment = (
+        Payment.objects
+        .filter(member=member, status="Paid")
+        .order_by("-payment_date")
+        .first()
     )
 
-    today_workout = Activity.objects.filter(
-        day=datetime.today().strftime("%A")
-    ).first()
+    membership = None
+
+    if latest_payment:
+        remaining_days = (
+            latest_payment.expiry_date - date.today()
+        ).days
+
+        membership = {
+            "plan": latest_payment.plan,
+            "amount": latest_payment.amount,
+            "status": "Active" if remaining_days >= 0 else "Expired",
+            "start_date": latest_payment.payment_date.date(),
+            "expiry_date": latest_payment.expiry_date,
+            "remaining_days": max(remaining_days, 0),
+        }
+
+    attendance_records = Attendance.objects.filter(member=member)
+
+    attendance = {
+        "present_days": attendance_records.filter(
+            status="Present"
+        ).count(),
+        "absent_days": attendance_records.filter(
+            status="Absent"
+        ).count(),
+    }
+
+    today_name = date.today().strftime("%A")
+
+    today_workouts = Activity.objects.filter(day=today_name)
 
     return Response({
         "member": MemberSerializer(member).data,
-        "membership": PaymentSerializer(payment).data if payment else None,
-        "attendance": {
-            "present_days": attendance.filter(status="Present").count(),
-            "absent_days": attendance.filter(status="Absent").count(),
-        },
-        "today_workout": ActivitySerializer(today_workout).data if today_workout else None,
+        "membership": membership,
+        "attendance": attendance,
+        "today_workout": ActivitySerializer(
+            today_workouts,
+            many=True
+        ).data,
     })
