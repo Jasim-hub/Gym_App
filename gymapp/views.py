@@ -154,7 +154,7 @@ class AttendanceHistoryView(APIView):
                 )
             if day:
                 attendance =attendance.filter(
-                    date_day=int(day)
+                    date=day
                 )    
 
             if year:
