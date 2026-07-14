@@ -142,6 +142,7 @@ class AttendanceHistoryView(APIView):
 
             month = request.GET.get("month")
             year = request.GET.get("year")
+            day = request.GET.get("day")
 
             attendance = Attendance.objects.filter(
                 member=member
@@ -151,6 +152,10 @@ class AttendanceHistoryView(APIView):
                 attendance = attendance.filter(
                     date__month=int(month)
                 )
+            if day:
+                attendance =attendance.filter(
+                    date_day=int(day)
+                )    
 
             if year:
                 attendance = attendance.filter(
@@ -616,13 +621,7 @@ class AllMemberWorkoutTableView(APIView):
             data.append(member_data)
 
         return Response(data)
-from datetime import date
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
 
-from .models import Member, Payment, Attendance, Activity
-from .serializers import MemberSerializer, ActivitySerializer
 
 
 @api_view(["GET"])
