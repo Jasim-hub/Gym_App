@@ -13,7 +13,7 @@ from django.core.mail import EmailMessage
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from rest_framework import status
-from .serializers import MemberSerializer, AttendanceSerializer, ActivitySerializer
+from .serializers import MemberSerializer, AttendanceSerializer, ActivitySerializer, PaymentSerializer
 from datetime import date, timedelta
 from datetime import datetime
 
@@ -616,3 +616,31 @@ class AllMemberWorkoutTableView(APIView):
             data.append(member_data)
 
         return Response(data)
+@api_view(["GET"])
+def dashboard(request):
+    user_id = request.GET.get("user_id")
+
+    member = Member.objects.get(user_id=user_id)
+
+    payment = Payment.objects.filter(
+        member=member,
+        status="Paid"
+    ).order_by("-payment_date").first()
+
+    attendance = Attendance.objects.filter(
+        member=member
+    )
+
+    today_workout = Activity.objects.filter(
+        day=datetime.today().strftime("%A")
+    ).first()
+
+    return Response({
+        "member": MemberSerializer(member).data,
+        "membership": PaymentSerializer(payment).data if payment else None,
+        "attendance": {
+            "present_days": attendance.filter(status="Present").count(),
+            "absent_days": attendance.filter(status="Absent").count(),
+        },
+        "today_workout": ActivitySerializer(today_workout).data if today_workout else None,
+    })
