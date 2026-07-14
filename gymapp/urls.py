@@ -60,5 +60,5 @@ urlpatterns = [
         MemberWorkoutView.as_view()
     ),
     path("member-workout/",AllMemberWorkoutTableView.as_view()),
-    path("memberdashboard/<str:user_id>/",dashboard.as_view()),
+    path("memberdashboard/<str:user_id>/",dashboard),
 ]
