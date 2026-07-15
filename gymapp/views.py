@@ -16,9 +16,7 @@ from rest_framework import status
 from .serializers import MemberSerializer, AttendanceSerializer, ActivitySerializer, PaymentSerializer
 from datetime import date, timedelta
 from datetime import datetime
-import traceback
-import logging
-logger = logging.getLogger(__name__)
+import requests
 
 class MemberListView(generics.ListAPIView):
     queryset = Member.objects.all()
