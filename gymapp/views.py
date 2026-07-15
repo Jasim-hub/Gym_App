@@ -25,14 +25,18 @@ class MemberCreateView(generics.CreateAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         member = serializer.save()
 
-        print("Member created:", member.user_id)
-        print("Sending registration email to:", member.email)
+        email_sent = False
 
         try:
             result = send_user_id_email(member)
+            email_sent = result == 1
+
             print("Registration email result:", result)
 
         except Exception as error:
@@ -42,6 +46,17 @@ class MemberCreateView(generics.CreateAPIView):
                 str(error),
             )
             traceback.print_exc()
+
+        return Response(
+            {
+                "message": "Registration successful",
+                "user_id": member.user_id,
+                "name": member.name,
+                "email": member.email,
+                "email_sent": email_sent,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Member.objects.all()
@@ -712,44 +727,33 @@ def dashboard(request):
 
 
 def send_user_id_email(member):
-    try:
-        print("EMAIL_HOST_USER:", settings.EMAIL_HOST_USER)
-        print("DEFAULT_FROM_EMAIL:", settings.DEFAULT_FROM_EMAIL)
-        print("Sending email to:", member.email)
-
-        email = EmailMessage(
-            subject="Welcome to Infinity Wellness Hub – Registration Successful",
-            body=f"""
+    email = EmailMessage(
+        subject="Welcome to Infinity Wellness Hub - Registration Successful",
+        body=f"""
 Dear {member.name},
 
 Welcome to Infinity Wellness Hub!
 
 Your registration has been completed successfully.
 
-Member ID : {member.user_id}
-Name : {member.name}
-Email : {member.email}
-Phone : {member.phone}
-Registration Date : {member.joined_date}
+Member ID: {member.user_id}
+Name: {member.name}
+Email: {member.email}
+Phone: {member.phone}
+Registration Date: {member.joined_date}
 
-Please keep your Member ID safe. It will be required for attendance, membership renewals, and other gym services.
+Please keep your Member ID safe. It will be required for attendance,
+membership renewals, and other gym services.
 
 Thank you for choosing Infinity Wellness Hub.
 
 Stay Healthy. Stay Strong.
 
-
-Thank you,
+Regards,
 Infinity Wellness Hub
-            """,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[member.email],
-        )
+        """,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[member.email],
+    )
 
-        result = email.send(fail_silently=False)
-
-        print("Email send result:", result)
-
-    except Exception as e:
-        print("EMAIL ERROR:", type(e).__name__)
-        print(str(e))
+    return email.send(fail_silently=False)
