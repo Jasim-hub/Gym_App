@@ -23,6 +23,14 @@ class MemberListView(generics.ListAPIView):
 class MemberCreateView(generics.CreateAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
+    def perform_create(self, serializer):
+        member = serializer.save()
+
+        try:
+            send_user_id_email(member)
+        except Exception as e:
+            print("Registration email failed:", e)
+
 class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
@@ -689,3 +697,38 @@ def dashboard(request):
             many=True
         ).data,
     })
+
+def send_user_id_email(member):
+   
+    email = EmailMessage(
+        subject="Welcome to Infinity Wellness Hub – Registration Successful",
+        body=f"""
+Dear {member.name},
+
+Welcome to Infinity Wellness Hub!
+
+Your registration has been completed successfully.
+
+Member ID : {member.user_id}
+Name : {member.name}
+Email : {member.email}
+Phone : {member.phone}
+Registration Date : {member.joined_date}
+
+Please keep your Member ID safe. It will be required for attendance, membership renewals, and other gym services.
+
+Thank you for choosing Infinity Wellness Hub.
+
+Stay Healthy. Stay Strong.
+
+Thank you,
+Infinity Wellness Hub
+""",
+        from_email=settings.EMAIL_HOST_USER,
+        to=[member.email],
+    )
+
+    
+
+    email.send()
+    print("Sending email to:",member.email)
