@@ -17,6 +17,8 @@ from .serializers import MemberSerializer, AttendanceSerializer, ActivitySeriali
 from datetime import date, timedelta
 from datetime import datetime
 import traceback
+import logging
+logger = logging.getLogger(__name__)
 
 class MemberListView(generics.ListAPIView):
     queryset = Member.objects.all()
@@ -27,8 +29,31 @@ class MemberCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         member = serializer.save()
-        print("Member successfully created:", member.user_id)
-        
+
+        print(
+            "MEMBER CREATED:",
+            member.user_id,
+            member.email,
+        )
+
+        try:
+            result = send_user_id_email(member)
+
+            print("EMAIL RESULT:", result)
+
+        except Exception as error:
+            print(
+                "REGISTRATION EMAIL FAILED:",
+                type(error).__name__,
+                str(error),
+            )
+
+            traceback.print_exc()
+
+            logger.exception(
+                "Registration email failed for member %s",
+                member.user_id,
+            )
 class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
