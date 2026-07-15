@@ -25,39 +25,10 @@ class MemberCreateView(generics.CreateAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
+    def perform_create(self, serializer):
         member = serializer.save()
-
-        email_sent = False
-
-        try:
-            result = send_user_id_email(member)
-            email_sent = result == 1
-
-            print("Registration email result:", result)
-
-        except Exception as error:
-            print(
-                "Registration email failed:",
-                type(error).__name__,
-                str(error),
-            )
-            traceback.print_exc()
-
-        return Response(
-            {
-                "message": "Registration successful",
-                "user_id": member.user_id,
-                "name": member.name,
-                "email": member.email,
-                "email_sent": email_sent,
-            },
-            status=status.HTTP_201_CREATED,
-        )
-
+        print("Member successfully created:", member.user_id)
+        
 class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
