@@ -150,15 +150,12 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = "jasimr796@gmail.com"
-EMAIL_HOST_PASSWORD = "tpyy tgnm qnst tszh" \
-""
 
 
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-import os
+
 import dj_database_url
 
 DEBUG = False
@@ -193,3 +190,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+print("EMAIL_HOST_USER:", EMAIL_HOST_USER)
+print("DEFAULT_FROM_EMAIL:", DEFAULT_FROM_EMAIL)
+print("EMAIL PASSWORD FOUND:", bool(EMAIL_HOST_PASSWORD))

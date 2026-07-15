@@ -169,7 +169,7 @@ class AttendanceHistoryView(APIView):
                 many=True
             )
 
-            return Response(serializer.data)
+            return Response(serializer.data,)
 
         except Member.DoesNotExist:
             return Response(
