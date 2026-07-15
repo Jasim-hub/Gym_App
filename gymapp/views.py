@@ -16,6 +16,7 @@ from rest_framework import status
 from .serializers import MemberSerializer, AttendanceSerializer, ActivitySerializer, PaymentSerializer
 from datetime import date, timedelta
 from datetime import datetime
+import traceback
 
 class MemberListView(generics.ListAPIView):
     queryset = Member.objects.all()
@@ -23,13 +24,24 @@ class MemberListView(generics.ListAPIView):
 class MemberCreateView(generics.CreateAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
+
     def perform_create(self, serializer):
         member = serializer.save()
 
+        print("Member created:", member.user_id)
+        print("Sending registration email to:", member.email)
+
         try:
-            send_user_id_email(member)
-        except Exception as e:
-            print("Registration email failed:", e)
+            result = send_user_id_email(member)
+            print("Registration email result:", result)
+
+        except Exception as error:
+            print(
+                "Registration email failed:",
+                type(error).__name__,
+                str(error),
+            )
+            traceback.print_exc()
 
 class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Member.objects.all()
@@ -698,11 +710,16 @@ def dashboard(request):
         ).data,
     })
 
+
 def send_user_id_email(member):
-   
-    email = EmailMessage(
-        subject="Welcome to Infinity Wellness Hub – Registration Successful",
-        body=f"""
+    try:
+        print("EMAIL_HOST_USER:", settings.EMAIL_HOST_USER)
+        print("DEFAULT_FROM_EMAIL:", settings.DEFAULT_FROM_EMAIL)
+        print("Sending email to:", member.email)
+
+        email = EmailMessage(
+            subject="Welcome to Infinity Wellness Hub – Registration Successful",
+            body=f"""
 Dear {member.name},
 
 Welcome to Infinity Wellness Hub!
@@ -721,14 +738,18 @@ Thank you for choosing Infinity Wellness Hub.
 
 Stay Healthy. Stay Strong.
 
+
 Thank you,
 Infinity Wellness Hub
-""",
-        from_email=settings.EMAIL_HOST_USER,
-        to=[member.email],
-    )
+            """,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[member.email],
+        )
 
-    
+        result = email.send(fail_silently=False)
 
-    email.send()
-    print("Sending email to:",member.email)
+        print("Email send result:", result)
+
+    except Exception as e:
+        print("EMAIL ERROR:", type(e).__name__)
+        print(str(e))
