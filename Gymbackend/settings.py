@@ -154,7 +154,7 @@ EMAIL_TIMEOUT = 5
 
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = "jasimr796@gmail.com"
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
 import dj_database_url

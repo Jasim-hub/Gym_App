@@ -459,10 +459,18 @@ def send_payment_receipt_email(payment):
     width, height = A4
 
     pdf.setFont("Helvetica-Bold", 18)
-    pdf.drawCentredString(width / 2, height - 60, "Infinity Wellness Hub")
+    pdf.drawCentredString(
+        width / 2,
+        height - 60,
+        "Infinity Wellness Hub"
+    )
 
     pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawCentredString(width / 2, height - 90, "Membership Payment Receipt")
+    pdf.drawCentredString(
+        width / 2,
+        height - 90,
+        "Membership Payment Receipt"
+    )
 
     pdf.setFont("Helvetica", 11)
 
@@ -473,15 +481,25 @@ def send_payment_receipt_email(payment):
         ("User ID", payment.member.user_id),
         ("Plan", payment.plan),
         ("Amount", f"Rs. {payment.amount}"),
-        ("Payment Method", payment.payment_mode),
-        ("Payment Date", str(payment.payment_date.date())),
-        ("Expiry Date", str(payment.expiry_date)),
+        ("Payment Method", payment.payment_mode or "Online"),
+        (
+            "Payment Date",
+            payment.payment_date.strftime("%d/%m/%Y")
+        ),
+        (
+            "Expiry Date",
+            payment.expiry_date.strftime("%d/%m/%Y")
+        ),
         ("Status", payment.status),
     ]
 
     for label, value in details:
+        pdf.setFont("Helvetica-Bold", 11)
         pdf.drawString(80, y, f"{label}:")
+
+        pdf.setFont("Helvetica", 11)
         pdf.drawString(230, y, str(value))
+
         y -= 25
 
     pdf.setFont("Helvetica", 10)
@@ -492,34 +510,91 @@ def send_payment_receipt_email(payment):
     )
 
     pdf.save()
-
     buffer.seek(0)
 
-    email = EmailMessage(
-        subject="Infinity Wellness Hub - Payment Receipt",
-        body=f"""
-Dear {payment.member.name},
+    pdf_bytes = buffer.getvalue()
+    buffer.close()
 
-Your membership payment has been recorded successfully.
+    encoded_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
 
-Please find your payment receipt attached.
+    url = "https://api.brevo.com/v3/smtp/email"
 
-Thank you,
-Infinity Wellness Hub
-""",
-        from_email=settings.EMAIL_HOST_USER,
-        to=[payment.member.email],
+    headers = {
+        "accept": "application/json",
+        "api-key": settings.BREVO_API_KEY,
+        "content-type": "application/json",
+    }
+
+    payload = {
+        "sender": {
+            "name": "Infinity Wellness Hub",
+            "email": settings.DEFAULT_FROM_EMAIL,
+        },
+        "to": [
+            {
+                "email": payment.member.email,
+                "name": payment.member.name,
+            }
+        ],
+        "subject": "Infinity Wellness Hub - Payment Receipt",
+        "htmlContent": f"""
+        <html>
+            <body style="font-family: Arial, sans-serif;">
+                <h2 style="color: #ff6600;">
+                    Payment Successful
+                </h2>
+
+                <p>Dear {payment.member.name},</p>
+
+                <p>
+                    Your membership payment has been recorded
+                    successfully.
+                </p>
+
+                <p>
+                    <strong>Plan:</strong> {payment.plan}<br>
+                    <strong>Amount:</strong> Rs. {payment.amount}<br>
+                    <strong>Status:</strong> {payment.status}
+                </p>
+
+                <p>
+                    Your payment receipt is attached to this email.
+                </p>
+
+                <p>
+                    Thank you for choosing Infinity Wellness Hub.
+                </p>
+
+                <p>
+                    Regards,<br>
+                    <strong>Infinity Wellness Hub</strong>
+                </p>
+            </body>
+        </html>
+        """,
+        "attachment": [
+            {
+                "content": encoded_pdf,
+                "name": (
+                    f"{payment.member.name}-payment-receipt.pdf"
+                ),
+            }
+        ],
+    }
+
+    response = requests.post(
+        url,
+        headers=headers,
+        json=payload,
+        timeout=15,
     )
 
-    email.attach(
-        f"{payment.member.name}-payment-receipt.pdf",
-        buffer.getvalue(),
-        "application/pdf"
-    )
+    print("Brevo payment email status:", response.status_code)
+    print("Brevo payment email response:", response.text)
 
-    email.send()
-    print("Sending email to:", payment.member.email)
+    response.raise_for_status()
 
+    return response.json()
 
 
 
@@ -728,9 +803,25 @@ def send_user_id_email(member):
         "textContent": f"""
 Welcome {member.name}
 
-Your registration was successful.
+Welcome to Infinity Wellness Hub!
 
+Your registration has been completed successfully. We are excited to have you as a member of our fitness family.
+
+Your Membership Details:
+Member Name : {member.name}
+Member ID : {member.user_id}
+Registration Date : {member.joined_date}
 Member ID: {member.user_id}
+
+Please keep your Member ID safe, as it will be required for attendance, membership renewals, and other gym services.
+
+You can now log in to the Infinity Wellness Hub mobile application using your registered email and password.
+
+If you have any questions or need assistance, feel free to contact us.
+
+Thank you for choosing Infinity Wellness Hub.
+
+Stay Healthy. Stay Strong.
 
 Thank you for choosing Infinity Wellness Hub.
 """,
