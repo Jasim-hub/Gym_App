@@ -26,6 +26,18 @@ class MemberListView(generics.ListAPIView):
 class MemberCreateView(generics.CreateAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
+
+    def perform_create(self, serializer):
+        member = serializer.save()
+
+        try:
+            send_user_id_email(member)
+        except BaseException as error:
+            print(
+                "Registration email failed:",
+                type(error).__name__,
+                str(error),
+            )
 class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
@@ -694,3 +706,38 @@ def dashboard(request):
     })
 
 
+def send_user_id_email(member):
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    headers = {
+        "accept": "application/json",
+        "api-key": settings.BREVO_API_KEY,
+        "content-type": "application/json",
+    }
+
+    data = {
+        "sender": {
+            "name": "Infinity Wellness Hub",
+            "email": settings.DEFAULT_FROM_EMAIL,
+        },
+        "to": [
+            {
+                "email": member.email,
+                "name": member.name,
+            }
+        ],
+        "subject": "Registration Successful",
+        "textContent": f"""
+Welcome {member.name}
+
+Your registration was successful.
+
+Member ID: {member.user_id}
+
+Thank you for choosing Infinity Wellness Hub.
+""",
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+    print(response.status_code)
+    print(response.text)
