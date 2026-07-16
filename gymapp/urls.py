@@ -1,7 +1,9 @@
 from django.urls import path
 from .views import MemberCreateView,MemberDetailView, LoginView, MemberListView, CheckInView, CheckOutView, AttendanceHistoryView, AttendanceListView
 from .views import MonthlyReportView, ActivityListCreateView, ActivityListView, ActivityDetailView, create_order, save_payment, my_membership
-from .views import membership_view, AssignWorkoutView, MemberWorkoutView, AllMemberWorkoutTableView, dashboard
+from .views import membership_view, AssignWorkoutView, MemberWorkoutView, AllMemberWorkoutTableView, dashboard, member_payment_pdf
+
+
 urlpatterns = [
      path("members/", MemberListView.as_view(), name="member-list"),
     path('members/create/', MemberCreateView.as_view(), name="member-create"),
@@ -61,4 +63,9 @@ urlpatterns = [
     ),
     path("member-workout/",AllMemberWorkoutTableView.as_view()),
     path("memberdashboard/<str:user_id>/",dashboard),
+    path(
+    "payment-report/<str:user_id>/",
+    member_payment_pdf,
+    name="member-payment-pdf",
+),
 ]

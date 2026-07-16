@@ -17,6 +17,8 @@ from .serializers import MemberSerializer, AttendanceSerializer, ActivitySeriali
 from datetime import date, timedelta
 from datetime import datetime
 import requests
+from django.shortcuts import get_object_or_404
+from django.http import FileResponse, JsonResponse
 
 class MemberListView(generics.ListAPIView):
     queryset = Member.objects.all()
@@ -830,3 +832,113 @@ Thank you for choosing Infinity Wellness Hub.
     response = requests.post(url, headers=headers, json=data)
     print(response.status_code)
     print(response.text)
+
+def member_payment_pdf(request, user_id):
+    member = get_object_or_404(
+        Member,
+        user_id=user_id
+    )
+
+    payment = (
+        Payment.objects
+        .filter(member=member)
+        .order_by("-payment_date")
+        .first()
+    )
+
+    if not payment:
+        return JsonResponse(
+            {"message": "No payment found for this member"},
+            status=404,
+        )
+
+    buffer = BytesIO()
+
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+
+    pdf.setTitle(
+        f"{member.name} Payment Report"
+    )
+
+    pdf.setFont("Helvetica-Bold", 20)
+    pdf.drawCentredString(
+        width / 2,
+        height - 60,
+        "Infinity Wellness Hub"
+    )
+
+    pdf.setFont("Helvetica-Bold", 15)
+    pdf.drawCentredString(
+        width / 2,
+        height - 90,
+        "Member Payment Report"
+    )
+
+    pdf.line(
+        60,
+        height - 110,
+        width - 60,
+        height - 110
+    )
+
+    y = height - 155
+
+    details = [
+        ("Member Name", member.name),
+        ("User ID", member.user_id),
+        ("Email", member.email),
+        ("Phone", member.phone),
+        ("Plan", payment.plan),
+        ("Amount", f"Rs. {payment.amount}"),
+        (
+            "Payment Mode",
+            payment.payment_mode or "Online"
+        ),
+        (
+            "Payment Date",
+            payment.payment_date.strftime("%d/%m/%Y")
+        ),
+        (
+            "Expiry Date",
+            payment.expiry_date.strftime("%d/%m/%Y")
+        ),
+        ("Status", payment.status),
+    ]
+
+    for label, value in details:
+        pdf.setFont("Helvetica-Bold", 11)
+        pdf.drawString(70, y, f"{label}:")
+
+        pdf.setFont("Helvetica", 11)
+        pdf.drawString(220, y, str(value))
+
+        y -= 28
+
+    pdf.line(
+        60,
+        y - 5,
+        width - 60,
+        y - 5
+    )
+
+    pdf.setFont("Helvetica", 10)
+    pdf.drawCentredString(
+        width / 2,
+        60,
+        "Thank you for choosing Infinity Wellness Hub."
+    )
+
+    pdf.save()
+    buffer.seek(0)
+
+    filename = (
+        f"{member.user_id}-payment-report.pdf"
+    )
+
+    return FileResponse(
+        buffer,
+        as_attachment=True,
+        filename=filename,
+        content_type="application/pdf",
+    )
