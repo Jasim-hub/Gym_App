@@ -7,7 +7,7 @@ from .views import membership_view, AssignWorkoutView, MemberWorkoutView, AllMem
 urlpatterns = [
      path("members/", MemberListView.as_view(), name="member-list"),
     path('members/create/', MemberCreateView.as_view(), name="member-create"),
-    path('members/<str:user_id>/', MemberDetailView.as_view()),
+    path('members/<int:id>/', MemberDetailView.as_view()),
     path("login/", LoginView.as_view()),
       path(
         "attendance/checkin/",
