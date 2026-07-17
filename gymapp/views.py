@@ -418,6 +418,7 @@ def membership_view(request):
         })
 
     return Response(data)
+
 def send_expiry_warnings():
     target_date = date.today() + timedelta(days=5)
 
@@ -456,149 +457,231 @@ Infinity Wellness Hub
 
 
 def send_payment_receipt_email(payment):
-    buffer = BytesIO()
+    try:
+        print("Payment receipt function started")
 
-    pdf = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
+        # Check required payment information
+        if not payment.member.email:
+            print("Member email is missing")
+            return False
 
-    pdf.setFont("Helvetica-Bold", 18)
-    pdf.drawCentredString(
-        width / 2,
-        height - 60,
-        "Infinity Wellness Hub"
-    )
+        buffer = BytesIO()
 
-    pdf.setFont("Helvetica-Bold", 14)
-    pdf.drawCentredString(
-        width / 2,
-        height - 90,
-        "Membership Payment Receipt"
-    )
+        pdf = canvas.Canvas(buffer, pagesize=A4)
+        width, height = A4
 
-    pdf.setFont("Helvetica", 11)
+        # Heading
+        pdf.setFont("Helvetica-Bold", 18)
+        pdf.drawCentredString(
+            width / 2,
+            height - 60,
+            "Infinity Wellness Hub"
+        )
 
-    y = height - 140
+        pdf.setFont("Helvetica-Bold", 14)
+        pdf.drawCentredString(
+            width / 2,
+            height - 90,
+            "Membership Payment Receipt"
+        )
 
-    details = [
-        ("Member Name", payment.member.name),
-        ("User ID", payment.member.user_id),
-        ("Plan", payment.plan),
-        ("Amount", f"Rs. {payment.amount}"),
-        ("Payment Method", payment.payment_mode or "Online"),
-        (
-            "Payment Date",
+        # Receipt details
+        y = height - 140
+
+        payment_date = (
             payment.payment_date.strftime("%d/%m/%Y")
-        ),
-        (
-            "Expiry Date",
+            if payment.payment_date
+            else "Not available"
+        )
+
+        expiry_date = (
             payment.expiry_date.strftime("%d/%m/%Y")
-        ),
-        ("Status", payment.status),
-    ]
+            if payment.expiry_date
+            else "Not available"
+        )
 
-    for label, value in details:
-        pdf.setFont("Helvetica-Bold", 11)
-        pdf.drawString(80, y, f"{label}:")
+        payment_mode = getattr(
+            payment,
+            "payment_mode",
+            None
+        ) or "Online"
 
-        pdf.setFont("Helvetica", 11)
-        pdf.drawString(230, y, str(value))
+        details = [
+            ("Member Name", payment.member.name),
+            ("User ID", payment.member.user_id),
+            ("Plan", payment.plan),
+            ("Amount", f"Rs. {payment.amount}"),
+            ("Payment Method", payment_mode),
+            ("Payment Date", payment_date),
+            ("Expiry Date", expiry_date),
+            ("Status", payment.status),
+        ]
 
-        y -= 25
+        for label, value in details:
+            pdf.setFont("Helvetica-Bold", 11)
+            pdf.drawString(80, y, f"{label}:")
 
-    pdf.setFont("Helvetica", 10)
-    pdf.drawCentredString(
-        width / 2,
-        60,
-        "Thank you for choosing Infinity Wellness Hub."
-    )
+            pdf.setFont("Helvetica", 11)
+            pdf.drawString(230, y, str(value))
 
-    pdf.save()
-    buffer.seek(0)
+            y -= 25
 
-    pdf_bytes = buffer.getvalue()
-    buffer.close()
+        pdf.setFont("Helvetica", 10)
+        pdf.drawCentredString(
+            width / 2,
+            60,
+            "Thank you for choosing Infinity Wellness Hub."
+        )
 
-    encoded_pdf = base64.b64encode(pdf_bytes).decode("utf-8")
+        pdf.save()
 
-    url = "https://api.brevo.com/v3/smtp/email"
+        buffer.seek(0)
+        pdf_bytes = buffer.read()
+        buffer.close()
 
-    headers = {
-        "accept": "application/json",
-        "api-key": settings.BREVO_API_KEY,
-        "content-type": "application/json",
-    }
+        encoded_pdf = base64.b64encode(
+            pdf_bytes
+        ).decode("utf-8")
 
-    payload = {
-        "sender": {
-            "name": "Infinity Wellness Hub",
-            "email": settings.DEFAULT_FROM_EMAIL,
-        },
-        "to": [
-            {
-                "email": payment.member.email,
-                "name": payment.member.name,
-            }
-        ],
-        "subject": "Infinity Wellness Hub - Payment Receipt",
-        "htmlContent": f"""
-        <html>
-            <body style="font-family: Arial, sans-serif;">
-                <h2 style="color: #ff6600;">
-                    Payment Successful
-                </h2>
+        url = "https://api.brevo.com/v3/smtp/email"
 
-                <p>Dear {payment.member.name},</p>
+        headers = {
+            "accept": "application/json",
+            "api-key": settings.BREVO_API_KEY,
+            "content-type": "application/json",
+        }
 
-                <p>
-                    Your membership payment has been recorded
-                    successfully.
-                </p>
+        data = {
+            "sender": {
+                "name": "Infinity Wellness Hub",
+                "email": settings.DEFAULT_FROM_EMAIL,
+            },
 
-                <p>
-                    <strong>Plan:</strong> {payment.plan}<br>
-                    <strong>Amount:</strong> Rs. {payment.amount}<br>
-                    <strong>Status:</strong> {payment.status}
-                </p>
+            "to": [
+                {
+                    "email": payment.member.email,
+                    "name": payment.member.name,
+                }
+            ],
 
-                <p>
-                    Your payment receipt is attached to this email.
-                </p>
+            "subject": (
+                "Infinity Wellness Hub - Payment Receipt"
+            ),
 
-                <p>
-                    Thank you for choosing Infinity Wellness Hub.
-                </p>
+            "htmlContent": f"""
+            <html>
+                <body style="
+                    font-family: Arial, sans-serif;
+                    color: #222222;
+                ">
 
-                <p>
-                    Regards,<br>
-                    <strong>Infinity Wellness Hub</strong>
-                </p>
-            </body>
-        </html>
-        """,
-        "attachment": [
-            {
-                "content": encoded_pdf,
-                "name": (
-                    f"{payment.member.name}-payment-receipt.pdf"
-                ),
-            }
-        ],
-    }
+                    <h2 style="color: #ff6600;">
+                        Payment Successful
+                    </h2>
 
-    response = requests.post(
-        url,
-        headers=headers,
-        json=payload,
-        timeout=15,
-    )
+                    <p>
+                        Dear {payment.member.name},
+                    </p>
 
-    print("Brevo payment email status:", response.status_code)
-    print("Brevo payment email response:", response.text)
+                    <p>
+                        Your membership payment has been
+                        recorded successfully.
+                    </p>
 
-    response.raise_for_status()
+                    <h3>Payment Details</h3>
 
-    return response.json()
+                    <p>
+                        <strong>Member ID:</strong>
+                        {payment.member.user_id}
+                        <br>
 
+                        <strong>Plan:</strong>
+                        {payment.plan}
+                        <br>
+
+                        <strong>Amount:</strong>
+                        Rs. {payment.amount}
+                        <br>
+
+                        <strong>Payment Method:</strong>
+                        {payment_mode}
+                        <br>
+
+                        <strong>Payment Date:</strong>
+                        {payment_date}
+                        <br>
+
+                        <strong>Expiry Date:</strong>
+                        {expiry_date}
+                        <br>
+
+                        <strong>Status:</strong>
+                        {payment.status}
+                    </p>
+
+                    <p>
+                        Your payment receipt is attached
+                        to this email.
+                    </p>
+
+                    <p>
+                        Thank you for choosing
+                        Infinity Wellness Hub.
+                    </p>
+
+                    <p>
+                        Regards,
+                        <br>
+                        <strong>
+                            Infinity Wellness Hub
+                        </strong>
+                    </p>
+
+                </body>
+            </html>
+            """,
+
+            "attachment": [
+                {
+                    "content": encoded_pdf,
+                    "name": (
+                        f"{payment.member.user_id}"
+                        "-payment-receipt.pdf"
+                    ),
+                }
+            ],
+        }
+
+        response = requests.post(
+            url,
+            headers=headers,
+            json=data,
+            timeout=30,
+        )
+
+        print(
+            "Payment email status:",
+            response.status_code
+        )
+
+        print(
+            "Payment email response:",
+            response.text
+        )
+
+        if response.status_code in [200, 201, 202]:
+            print("Payment receipt email sent successfully")
+            return True
+
+        print("Payment receipt email failed")
+        return False
+
+    except Exception as error:
+        print(
+            "Payment receipt email error:",
+            str(error)
+        )
+        return False
 
 
 
