@@ -142,6 +142,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://gym-app-six-weld.vercel.app",
 ]
+CORS_ALLOW_ALL_ORIGINS = True
 RAZORPAY_KEY_ID = "rzp_test_T1r8eBwL1LYwN5"
 RAZORPAY_KEY_SECRET = "9REF4HbiYZSwlVdGDZDptOjr"
 
