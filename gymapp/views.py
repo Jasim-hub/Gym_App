@@ -19,6 +19,9 @@ from datetime import datetime
 import requests
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, JsonResponse
+import base64
+
+
 
 class MemberListView(generics.ListAPIView):
     queryset = Member.objects.all()
