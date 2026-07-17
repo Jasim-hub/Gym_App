@@ -943,3 +943,34 @@ def member_payment_pdf(request, user_id):
         filename=filename,
         content_type="application/pdf",
     )
+class MemberWorkoutAllView(APIView):
+
+    def get(self, request, user_id):
+        try:
+            member = Member.objects.get(user_id=user_id)
+        except Member.DoesNotExist:
+            return Response(
+                {"error": "Member not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        plans = MemberExercise.objects.filter(member=member)
+
+        member_data = {
+            "user_id": member.user_id,
+            "name": member.name,
+            "Monday": "",
+            "Tuesday": "",
+            "Wednesday": "",
+            "Thursday": "",
+            "Friday": "",
+            "Saturday": "",
+        }
+
+        for plan in plans:
+            if plan.member_day in member_data:
+                member_data[plan.member_day] = plan.workout_day
+
+        return Response(member_data, status=status.HTTP_200_OK)
+
+
