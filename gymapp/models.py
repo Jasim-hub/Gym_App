@@ -230,3 +230,16 @@ class MemberExercise(models.Model):
 
     class Meta:
         unique_together = ("member", "member_day")
+
+
+class UpdatedMember(models.Model):
+
+    name = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=255)
+
+    otp = models.CharField(
+        max_length=6,
+        blank=True,
+        null=True
+    )

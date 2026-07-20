@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import MemberCreateView,MemberDetailView, LoginView, MemberListView, CheckInView, CheckOutView, AttendanceHistoryView, AttendanceListView
 from .views import MonthlyReportView, ActivityListCreateView, ActivityListView, ActivityDetailView, create_order, save_payment, my_membership
-from .views import membership_view, AssignWorkoutView, MemberWorkoutView, AllMemberWorkoutTableView, dashboard, member_payment_pdf, MemberWorkoutAllView
+from .views import membership_view, AssignWorkoutView, MemberWorkoutView, AllMemberWorkoutTableView, dashboard, member_payment_pdf, MemberWorkoutAllView, forgot_password, verify_otp
 
 
 urlpatterns = [
@@ -69,4 +69,6 @@ urlpatterns = [
     name="member-payment-pdf",
 ),
     path("member-alldays-workouts/<str:user_id>/", MemberWorkoutAllView.as_view(), name="member-workout",),
+    path("verify-otp/", verify_otp),
+    path("forgot-password/", forgot_password)
 ]

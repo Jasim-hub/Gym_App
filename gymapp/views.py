@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 import razorpay
 from django.conf import settings
 from rest_framework.response import Response
-from .models import Member, Attendance, Activity, Payment, MemberExercise
+from .models import Member, Attendance, Activity, Payment, MemberExercise, UpdatedMember
 from rest_framework.decorators import api_view
 from dateutil.relativedelta import relativedelta
 from django.core.mail import send_mail
@@ -20,6 +20,7 @@ import requests
 from django.shortcuts import get_object_or_404
 from django.http import FileResponse, JsonResponse
 import base64
+import random
 
 
 
@@ -1060,3 +1061,178 @@ class MemberWorkoutAllView(APIView):
         return Response(member_data, status=status.HTTP_200_OK)
 
 
+@api_view(["POST"])
+def forgot_password(request):
+
+    email = request.data.get("email")
+
+    if not email:
+        return Response(
+            {"message": "Email is required"},
+            status=400
+        )
+
+    try:
+        member = Member.objects.get(email=email)
+
+    except Member.DoesNotExist:
+        return Response(
+            {"message": "Email not found"},
+            status=404
+        )
+
+    otp = str(random.randint(100000, 999999))
+
+    # Save OTP
+    member.otp = otp
+    member.save()
+
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    headers = {
+        "accept": "application/json",
+        "api-key": settings.BREVO_API_KEY,
+        "content-type": "application/json",
+    }
+
+    html = f"""
+    <h2>Infinity Wellness Hub</h2>
+
+    <p>Hello {member.name},</p>
+
+    <p>You requested to reset your password.</p>
+
+    <h1 style="color:#ff7a00;">{otp}</h1>
+
+    <p>This OTP is valid for 10 minutes.</p>
+
+    <p>If you didn't request this, please ignore this email.</p>
+    """
+
+    payload = {
+        "sender": {
+            "name": settings.SENDER_NAME,
+            "email": settings.SENDER_EMAIL
+        },
+        "to": [
+            {
+                "email": member.email,
+                "name": member.name
+            }
+        ],
+        "subject": "Password Reset OTP",
+        "htmlContent": html,
+    }
+
+    response = requests.post(
+        url,
+        headers=headers,
+        json=payload,
+    )
+
+    if response.status_code == 201:
+        return Response(
+            {"message": "OTP sent successfully"}
+        )
+
+    return Response(
+        {
+            "message": "Email sending failed",
+            "error": response.text
+        },
+        status=400,
+    )
+@api_view(["POST"])
+def forgot_password(request):
+
+    email = request.data.get("email")
+
+    if not email:
+        return Response({"message":"Email required"},status=400)
+
+    try:
+        member = UpdatedMember.objects.get(email=email)
+
+    except UpdatedMember.DoesNotExist:
+        return Response({"message":"Email not found"},status=404)
+
+    otp = str(random.randint(100000,999999))
+
+    member.otp = otp
+    member.save()
+
+    headers = {
+        "accept":"application/json",
+        "api-key":settings.BREVO_API_KEY,
+        "content-type":"application/json"
+    }
+
+    html = f"""
+    <h2>Infinity Wellness Hub</h2>
+
+    <p>Hello {member.name}</p>
+
+    <p>Your Password Reset OTP</p>
+
+    <h1 style="color:#ff7a00;">{otp}</h1>
+
+    <p>This OTP is valid for 10 minutes.</p>
+    """
+
+    payload = {
+        "sender":{
+            "name":"Infinity Wellness Hub",
+            "email":settings.SENDER_EMAIL
+        },
+        "to":[
+            {
+                "email":member.email,
+                "name":member.name
+            }
+        ],
+        "subject":"Password Reset OTP",
+        "htmlContent":html
+    }
+
+    requests.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers=headers,
+        json=payload
+    )
+
+    return Response({
+        "message":"OTP Sent Successfully"
+    })
+@api_view(["POST"])
+def verify_otp(request):
+
+    email = request.data.get("email")
+    otp = request.data.get("otp")
+
+    try:
+        member = UpdatedMember.objects.get(email=email)
+
+    except UpdatedMember.DoesNotExist:
+
+        return Response(
+            {"message":"Member Not Found"},
+            status=404
+        )
+
+    if member.otp != otp:
+
+        return Response(
+            {"message":"Invalid OTP"},
+            status=400
+        )
+
+    member.otp = None
+    member.save()
+
+    return Response({
+
+        "message":"OTP Verified",
+
+        "member_id":member.id
+
+    })
