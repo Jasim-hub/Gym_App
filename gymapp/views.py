@@ -68,7 +68,9 @@ class LoginView(APIView):
                     "date_of_birth": member.date_of_birth,
                     "gender": member.gender,
                     "joined_date": member.joined_date,
-                    "profile_image": member.profile_image.url
+                    "profile_image": member.profile_image.url,
+                    "plan_type":member.plan_type,
+                    "document_type":member.document_type,
                 })
 
             return Response(
