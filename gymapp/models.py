@@ -37,6 +37,17 @@ class Member(models.Model):
         null=True,
         blank=True
     )
+    otp = models.CharField(
+        max_length=6,
+        blank=True,
+        null=True
+    )
+
+    otp_created_at = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+
 
     def __str__(self):
         return self.name
@@ -232,14 +243,3 @@ class MemberExercise(models.Model):
         unique_together = ("member", "member_day")
 
 
-class UpdatedMember(models.Model):
-
-    name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=255)
-
-    otp = models.CharField(
-        max_length=6,
-        blank=True,
-        null=True
-    )

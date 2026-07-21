@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Member, Attendance, Activity, Payment, UpdatedMember
+from .models import Member, Attendance, Activity, Payment
 
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,31 +36,3 @@ class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = "__all__"
-class MemberSerializer(serializers.ModelSerializer):
-
-    class Meta:
-
-        model = UpdatedMember
-
-        fields = "__all__"
-
-        extra_kwargs = {
-            "password":{
-                "write_only":True,
-                "required":False
-            }
-        }
-
-    def update(self, instance, validated_data):
-
-        password = validated_data.pop("password",None)
-
-        for key,value in validated_data.items():
-            setattr(instance,key,value)
-
-        if password:
-            instance.password = make_password(password)
-
-        instance.save()
-
-        return instance

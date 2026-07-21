@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 import razorpay
 from django.conf import settings
 from rest_framework.response import Response
-from .models import Member, Attendance, Activity, Payment, MemberExercise, UpdatedMember
+from .models import Member, Attendance, Activity, Payment, MemberExercise
 from rest_framework.decorators import api_view
 from dateutil.relativedelta import relativedelta
 from django.core.mail import send_mail
@@ -1148,23 +1148,23 @@ def forgot_password(request):
     email = request.data.get("email")
 
     if not email:
-        return Response({"message":"Email required"},status=400)
+        return Response({"message": "Email required"}, status=400)
 
     try:
-        member = UpdatedMember.objects.get(email=email)
+        member = Member.objects.get(email=email)
 
-    except UpdatedMember.DoesNotExist:
-        return Response({"message":"Email not found"},status=404)
+    except Member.DoesNotExist:
+        return Response({"message": "Email not found"}, status=404)
 
-    otp = str(random.randint(100000,999999))
+    otp = str(random.randint(100000, 999999))
 
     member.otp = otp
     member.save()
 
     headers = {
-        "accept":"application/json",
-        "api-key":settings.BREVO_API_KEY,
-        "content-type":"application/json"
+        "accept": "application/json",
+        "api-key": settings.BREVO_API_KEY,
+        "content-type": "application/json"
     }
 
     html = f"""
@@ -1180,18 +1180,16 @@ def forgot_password(request):
     """
 
     payload = {
-        "sender":{
-            "name":"Infinity Wellness Hub",
-            "email":settings.SENDER_EMAIL
+        "sender": {
+            "name": "Infinity Wellness Hub",
+            "email": settings.SENDER_EMAIL
         },
-        "to":[
-            {
-                "email":member.email,
-                "name":member.name
-            }
-        ],
-        "subject":"Password Reset OTP",
-        "htmlContent":html
+        "to": [{
+            "email": member.email,
+            "name": member.name
+        }],
+        "subject": "Password Reset OTP",
+        "htmlContent": html
     }
 
     requests.post(
@@ -1200,9 +1198,7 @@ def forgot_password(request):
         json=payload
     )
 
-    return Response({
-        "message":"OTP Sent Successfully"
-    })
+    return Response({"message": "OTP Sent Successfully"})
 @api_view(["POST"])
 def verify_otp(request):
 
@@ -1210,19 +1206,17 @@ def verify_otp(request):
     otp = request.data.get("otp")
 
     try:
-        member = UpdatedMember.objects.get(email=email)
+        member = Member.objects.get(email=email)
 
-    except UpdatedMember.DoesNotExist:
-
+    except Member.DoesNotExist:
         return Response(
-            {"message":"Member Not Found"},
+            {"message": "Member Not Found"},
             status=404
         )
 
     if member.otp != otp:
-
         return Response(
-            {"message":"Invalid OTP"},
+            {"message": "Invalid OTP"},
             status=400
         )
 
@@ -1230,9 +1224,6 @@ def verify_otp(request):
     member.save()
 
     return Response({
-
-        "message":"OTP Verified",
-
-        "member_id":member.id
-
+        "message": "OTP Verified",
+        "member_id": member.id
     })
