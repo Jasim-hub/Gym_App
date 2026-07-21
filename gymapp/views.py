@@ -21,7 +21,7 @@ from django.shortcuts import get_object_or_404
 from django.http import FileResponse, JsonResponse
 import base64
 import random
-
+from django.utils import timezone
 
 
 class MemberListView(generics.ListAPIView):
