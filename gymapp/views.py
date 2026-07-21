@@ -1064,61 +1064,107 @@ class MemberWorkoutAllView(APIView):
 
 @api_view(["POST"])
 def forgot_password(request):
-
-    email = request.data.get("email")
+    email = request.data.get("email", "").strip().lower()
 
     if not email:
-        return Response({"message": "Email required"}, status=400)
+        return Response(
+            {"message": "Email required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    member = Member.objects.filter(email__iexact=email).first()
+
+    if not member:
+        return Response(
+            {"message": "Email not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
 
     try:
-        member = Member.objects.get(email=email)
+        otp = str(random.randint(100000, 999999))
 
-    except Member.DoesNotExist:
-        return Response({"message": "Email not found"}, status=404)
+        member.otp = otp
+        member.otp_created_at = timezone.now()
+        member.save(update_fields=["otp", "otp_created_at"])
 
-    otp = str(random.randint(100000, 999999))
+        brevo_api_key = getattr(settings, "BREVO_API_KEY", None)
+        sender_email = getattr(settings, "SENDER_EMAIL", None)
 
-    member.otp = otp
-    member.save()
+        if not brevo_api_key:
+            return Response(
+                {"message": "BREVO_API_KEY is not configured"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-    headers = {
-        "accept": "application/json",
-        "api-key": settings.BREVO_API_KEY,
-        "content-type": "application/json"
-    }
+        if not sender_email:
+            return Response(
+                {"message": "SENDER_EMAIL is not configured"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-    html = f"""
-    <h2>Infinity Wellness Hub</h2>
+        headers = {
+            "accept": "application/json",
+            "api-key": brevo_api_key,
+            "content-type": "application/json",
+        }
 
-    <p>Hello {member.name}</p>
+        html = f"""
+        <h2>Infinity Wellness Hub</h2>
+        <p>Hello {member.name}</p>
+        <p>Your password reset OTP is:</p>
+        <h1 style="color:#ff7a00;">{otp}</h1>
+        <p>This OTP is valid for 10 minutes.</p>
+        """
 
-    <p>Your Password Reset OTP</p>
+        payload = {
+            "sender": {
+                "name": "Infinity Wellness Hub",
+                "email": sender_email,
+            },
+            "to": [
+                {
+                    "email": member.email,
+                    "name": member.name,
+                }
+            ],
+            "subject": "Password Reset OTP",
+            "htmlContent": html,
+        }
 
-    <h1 style="color:#ff7a00;">{otp}</h1>
+        brevo_response = requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers=headers,
+            json=payload,
+            timeout=20,
+        )
 
-    <p>This OTP is valid for 10 minutes.</p>
-    """
+        print("BREVO STATUS:", brevo_response.status_code)
+        print("BREVO RESPONSE:", brevo_response.text)
 
-    payload = {
-        "sender": {
-            "name": "Infinity Wellness Hub",
-            "email": settings.SENDER_EMAIL
-        },
-        "to": [{
-            "email": member.email,
-            "name": member.name
-        }],
-        "subject": "Password Reset OTP",
-        "htmlContent": html
-    }
+        if brevo_response.status_code not in [200, 201, 202]:
+            return Response(
+                {
+                    "message": "OTP created, but email sending failed",
+                    "email_service_error": brevo_response.text,
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-    requests.post(
-        "https://api.brevo.com/v3/smtp/email",
-        headers=headers,
-        json=payload
-    )
+        return Response(
+            {"message": "OTP Sent Successfully"},
+            status=status.HTTP_200_OK,
+        )
 
-    return Response({"message": "OTP Sent Successfully"})
+    except Exception as error:
+        print("FORGOT PASSWORD ERROR:", repr(error))
+
+        return Response(
+            {
+                "message": "Server error while sending OTP",
+                "error": str(error),
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 @api_view(["POST"])
 def verify_otp(request):
 
