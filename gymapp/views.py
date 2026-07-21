@@ -1088,7 +1088,7 @@ def forgot_password(request):
         member.save(update_fields=["otp", "otp_created_at"])
 
         brevo_api_key = getattr(settings, "BREVO_API_KEY", None)
-        sender_email = getattr(settings, "SENDER_EMAIL", None)
+        sender_email = getattr(settings, "DEFAULT_FROM_EMAIL", None)
 
         if not brevo_api_key:
             return Response(
