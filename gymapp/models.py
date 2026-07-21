@@ -5,6 +5,31 @@ def generate_user_id():
     return str(random.randint(1000, 9999))
 
 class Member(models.Model):
+    PAYMENT_MODE = (
+        ("Cash", "Cash"),
+        ("UPI", "UPI"),
+        ("Card", "Card"),
+        ("Net_Banking", "Net_Banking"),
+    )
+    DOCUMENT_TYPE = (
+        ("AadhaarCard", "Aadhaar Card"),
+        ("PanCard", "PAN Card"),
+        ("VoterId", "Voter ID"),
+        ("Other", "Other"),
+    )
+
+    ADMISSION_STATUS = (
+        ("Paid", "Paid"),
+        ("Unpaid", "Unpaid"),
+    )
+
+    PLAN_TYPE = (
+        ("LifeLong", "LifeLong"),
+        ("1 Year", "1 Year"),
+        ("6 Months", "6 Months"),
+        ("3 Months", "3 Months"),
+        ("1 Month", "1 Month"),
+    )
     user_id = models.CharField(
         max_length=4,
         unique=True,
@@ -47,8 +72,39 @@ class Member(models.Model):
         blank=True,
         null=True
     )
-
-
+    document_type = models.CharField(
+        max_length=20,
+        choices=DOCUMENT_TYPE,
+        null=True,
+        blank=True
+    )
+    document_image = models.ImageField(
+        upload_to="members/documents/",
+        null=True,
+        blank=True
+    )
+    admission_status = models.CharField(
+        max_length=10,
+        choices=ADMISSION_STATUS,
+        default="Unpaid"
+    )
+    admission_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+    payment_mode = models.CharField(
+        max_length=20,
+        choices=PAYMENT_MODE,
+        default="Cash"
+    )
+    plan_type = models.CharField(
+        max_length=20,
+        choices=PLAN_TYPE,
+        null=True,
+        blank=True
+    )
+    
     def __str__(self):
         return self.name
     
