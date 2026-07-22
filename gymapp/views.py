@@ -1405,7 +1405,7 @@ def calculate_total_hours(check_in, check_out):
     hours = total_seconds // 3600
     minutes = (total_seconds % 3600) // 60
 
-    return f"{hours}h {minutes}m"
+    return f"{hours}:{minutes}"
 
 
 @api_view(["POST"])
