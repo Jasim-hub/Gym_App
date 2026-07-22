@@ -19,7 +19,11 @@ urlpatterns = [
         "attendance/checkout/",
         CheckOutView.as_view()
     ),
-
+path(
+        "attendance/biometric-scan/",
+        biometric_scan,
+        name="biometric-scan"
+    ),
     path(
         "attendance/<str:user_id>/",
         AttendanceHistoryView.as_view()
@@ -36,7 +40,7 @@ urlpatterns = [
         "activity/",
         ActivityListCreateView.as_view()
     ),
-
+    
     path(
         "activity/<int:pk>/",
         ActivityDetailView.as_view()
@@ -73,10 +77,6 @@ urlpatterns = [
     path("verify-otp/", verify_otp),
     path("forgot-password/", forgot_password),
     path("payment/export-member-fees/", export_member_fee_report, name="export-member-fees-report"),
-    path(
-        "attendance/biometric-scan/",
-        biometric_scan,
-        name="biometric-scan"
-    ),
+    
 
 ]
