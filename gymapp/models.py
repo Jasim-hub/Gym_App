@@ -135,6 +135,16 @@ class Attendance(models.Model):
         max_length=10,
         default="Present"
     )
+    attendance_method = models.CharField(
+        max_length=30,
+        default="Manual"
+    )
+
+    device_id = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         return f"{self.member.name} - {self.date}"

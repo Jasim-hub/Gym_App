@@ -2,7 +2,7 @@ from django.urls import path
 from .views import MemberCreateView,MemberDetailView, LoginView, MemberListView, CheckInView, CheckOutView, AttendanceHistoryView, AttendanceListView
 from .views import MonthlyReportView, ActivityListCreateView, ActivityListView, ActivityDetailView, create_order, save_payment, my_membership
 from .views import membership_view, AssignWorkoutView, MemberWorkoutView, AllMemberWorkoutTableView, dashboard, member_payment_pdf, MemberWorkoutAllView, forgot_password, verify_otp
-from .views import export_member_fee_report
+from .views import export_member_fee_report, biometric_scan
 
 
 urlpatterns = [
@@ -72,6 +72,11 @@ urlpatterns = [
     path("member-alldays-workouts/<str:user_id>/", MemberWorkoutAllView.as_view(), name="member-workout",),
     path("verify-otp/", verify_otp),
     path("forgot-password/", forgot_password),
-    path("payment/export-member-fees/", export_member_fee_report, name="export-member-fees-report")
+    path("payment/export-member-fees/", export_member_fee_report, name="export-member-fees-report"),
+    path(
+        "attendance/biometric-scan/",
+        biometric_scan,
+        name="biometric-scan"
+    ),
 
 ]

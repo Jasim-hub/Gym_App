@@ -1370,3 +1370,121 @@ def export_member_fee_report(request):
     workbook.save(response)
 
     return response
+@api_view(["POST"])
+def biometric_scan(request):
+    employee_id = request.data.get("employee_id")
+    device_id = request.data.get(
+        "device_id",
+        "DEMO-BIO-001"
+    )
+    verification_type = request.data.get(
+        "verification_type",
+        "Fingerprint"
+    )
+    scan_status = request.data.get(
+        "status",
+        "verified"
+    )
+
+    if not employee_id:
+        return Response(
+            {
+                "success": False,
+                "message": "Employee ID is required."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if scan_status.lower() != "verified":
+        return Response(
+            {
+                "success": False,
+                "message": "Biometric verification failed."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        member = Member.objects.get(
+            user_id=employee_id
+        )
+    except Member.DoesNotExist:
+        return Response(
+            {
+                "success": False,
+                "message": "Member not found."
+            },
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    now = timezone.now()
+    today = timezone.localdate()
+
+    attendance, created = Attendance.objects.get_or_create(
+        member=member,
+        date=today,
+        defaults={
+            "check_in": now,
+            "status": "Present",
+            "attendance_method": verification_type,
+            "device_id": device_id
+        }
+    )
+
+    if created:
+        action = "check_in"
+        message = "Biometric check-in successful."
+
+    elif attendance.check_out is None:
+        attendance.check_out = now
+        attendance.attendance_method = verification_type
+        attendance.device_id = device_id
+        attendance.save()
+
+        action = "check_out"
+        message = "Biometric check-out successful."
+
+    else:
+        return Response(
+            {
+                "success": False,
+                "message": "Today's attendance is already completed.",
+                "member": {
+                    "user_id": member.user_id,
+                    "name": member.name
+                }
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return Response(
+        {
+            "success": True,
+            "message": message,
+            "action": action,
+            "member": {
+                "user_id": member.user_id,
+                "name": member.name
+            },
+            "attendance": {
+                "date": str(attendance.date),
+                "check_in": (
+                    timezone.localtime(
+                        attendance.check_in
+                    ).strftime("%I:%M:%S %p")
+                    if attendance.check_in
+                    else None
+                ),
+                "check_out": (
+                    timezone.localtime(
+                        attendance.check_out
+                    ).strftime("%I:%M:%S %p")
+                    if attendance.check_out
+                    else None
+                ),
+                "method": attendance.attendance_method,
+                "device_id": attendance.device_id
+            }
+        },
+        status=status.HTTP_200_OK
+    )
