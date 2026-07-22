@@ -1370,121 +1370,228 @@ def export_member_fee_report(request):
     workbook.save(response)
 
     return response
-@api_view(["POST"])
-def biometric_scan(request):
-    employee_id = request.data.get("employee_id")
-    device_id = request.data.get(
-        "device_id",
-        "DEMO-BIO-001"
-    )
-    verification_type = request.data.get(
-        "verification_type",
-        "Fingerprint"
-    )
-    scan_status = request.data.get(
-        "status",
-        "verified"
-    )
+def format_time(value):
+    
+    if not value:
+        return None
 
-    if not employee_id:
-        return Response(
-            {
-                "success": False,
-                "message": "Employee ID is required."
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    return value.strftime("%I:%M:%S %p")
 
-    if scan_status.lower() != "verified":
-        return Response(
-            {
-                "success": False,
-                "message": "Biometric verification failed."
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
 
-    try:
-        member = Member.objects.get(
-            user_id=employee_id
-        )
-    except Member.DoesNotExist:
-        return Response(
-            {
-                "success": False,
-                "message": "Member not found."
-            },
-            status=status.HTTP_404_NOT_FOUND
-        )
+def calculate_total_hours(check_in, check_out):
+    
+    if not check_in or not check_out:
+        return ""
 
-    now = timezone.now()
     today = timezone.localdate()
 
-    attendance, created = Attendance.objects.get_or_create(
-        member=member,
-        date=today,
-        defaults={
-            "check_in": now,
-            "status": "Present",
-            "attendance_method": verification_type,
-            "device_id": device_id
-        }
+    check_in_datetime = timezone.datetime.combine(
+        today,
+        check_in
     )
 
-    if created:
-        action = "check_in"
-        message = "Biometric check-in successful."
+    check_out_datetime = timezone.datetime.combine(
+        today,
+        check_out
+    )
 
-    elif attendance.check_out is None:
-        attendance.check_out = now
-        attendance.attendance_method = verification_type
-        attendance.device_id = device_id
-        attendance.save()
+    
+    if check_out_datetime < check_in_datetime:
+        check_out_datetime += timezone.timedelta(days=1)
 
-        action = "check_out"
-        message = "Biometric check-out successful."
+    duration = check_out_datetime - check_in_datetime
 
-    else:
+    total_seconds = int(duration.total_seconds())
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+
+    return f"{hours}h {minutes}m"
+
+
+@api_view(["POST"])
+def biometric_scan(request):
+    try:
+        employee_id = request.data.get("employee_id")
+
+        device_id = request.data.get(
+            "device_id",
+            "DEMO-BIO-001"
+        )
+
+        verification_type = request.data.get(
+            "verification_type",
+            "Fingerprint"
+        )
+
+        scan_status = request.data.get(
+            "status",
+            "verified"
+        )
+
+        if not employee_id:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Member ID is required."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if str(scan_status).lower() != "verified":
+            return Response(
+                {
+                    "success": False,
+                    "message": "Biometric verification failed."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            member = Member.objects.get(
+                user_id=employee_id
+            )
+
+        except Member.DoesNotExist:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Member not found."
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        today = timezone.localdate()
+
+        local_time = timezone.localtime(
+            timezone.now()
+        ).time().replace(microsecond=0)
+
+        attendance, created = Attendance.objects.get_or_create(
+            member=member,
+            date=today,
+            defaults={
+                "check_in": local_time,
+                "status": "Present",
+                "attendance_method": verification_type,
+                "device_id": device_id,
+            }
+        )
+
+    
+        if created:
+            action = "check_in"
+            message = "Biometric check-in successful."
+
+    
+        elif attendance.check_in is None:
+            attendance.check_in = local_time
+            attendance.status = "Present"
+            attendance.attendance_method = verification_type
+            attendance.device_id = device_id
+
+            attendance.save(
+                update_fields=[
+                    "check_in",
+                    "status",
+                    "attendance_method",
+                    "device_id",
+                ]
+            )
+
+            action = "check_in"
+            message = "Biometric check-in successful."
+
+        # Second biometric scan: Check-out
+        elif attendance.check_out is None:
+            attendance.check_out = local_time
+            attendance.attendance_method = verification_type
+            attendance.device_id = device_id
+
+            attendance.total_hours = calculate_total_hours(
+                attendance.check_in,
+                attendance.check_out
+            )
+
+            attendance.save(
+                update_fields=[
+                    "check_out",
+                    "total_hours",
+                    "attendance_method",
+                    "device_id",
+                ]
+            )
+
+            action = "check_out"
+            message = "Biometric check-out successful."
+
+        # Third scan: attendance already completed
+        else:
+            return Response(
+                {
+                    "success": False,
+                    "message": (
+                        "Today's check-in and check-out "
+                        "are already completed."
+                    ),
+                    "action": "completed",
+                    "member": {
+                        "user_id": member.user_id,
+                        "name": member.name,
+                    },
+                    "attendance": {
+                        "date": str(attendance.date),
+                        "check_in": format_time(
+                            attendance.check_in
+                        ),
+                        "check_out": format_time(
+                            attendance.check_out
+                        ),
+                        "total_hours": attendance.total_hours,
+                        "method": attendance.attendance_method,
+                        "device_id": attendance.device_id,
+                    }
+                },
+                status=status.HTTP_200_OK
+            )
+
+        attendance.refresh_from_db()
+
+        return Response(
+            {
+                "success": True,
+                "message": message,
+                "action": action,
+                "member": {
+                    "user_id": member.user_id,
+                    "name": member.name,
+                },
+                "attendance": {
+                    "date": str(attendance.date),
+                    "check_in": format_time(
+                        attendance.check_in
+                    ),
+                    "check_out": format_time(
+                        attendance.check_out
+                    ),
+                    "total_hours": attendance.total_hours,
+                    "method": attendance.attendance_method,
+                    "device_id": attendance.device_id,
+                }
+            },
+            status=status.HTTP_200_OK
+        )
+
+    except Exception as error:
+        print(
+            "BIOMETRIC ATTENDANCE ERROR:",
+            repr(error)
+        )
+
         return Response(
             {
                 "success": False,
-                "message": "Today's attendance is already completed.",
-                "member": {
-                    "user_id": member.user_id,
-                    "name": member.name
-                }
+                "message": "Biometric attendance server error.",
+                "error": str(error),
             },
-            status=status.HTTP_400_BAD_REQUEST
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-
-    return Response(
-        {
-            "success": True,
-            "message": message,
-            "action": action,
-            "member": {
-                "user_id": member.user_id,
-                "name": member.name
-            },
-            "attendance": {
-                "date": str(attendance.date),
-                "check_in": (
-                    timezone.localtime(
-                        attendance.check_in
-                    ).strftime("%I:%M:%S %p")
-                    if attendance.check_in
-                    else None
-                ),
-                "check_out": (
-                    timezone.localtime(
-                        attendance.check_out
-                    ).strftime("%I:%M:%S %p")
-                    if attendance.check_out
-                    else None
-                ),
-                "method": attendance.attendance_method,
-                "device_id": attendance.device_id
-            }
-        },
-        status=status.HTTP_200_OK
-    )
