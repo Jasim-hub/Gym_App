@@ -1,0 +1,132 @@
+.biometric-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, #333, #080808 70%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.biometric-terminal {
+  width: 390px;
+  background: #151515;
+  color: white;
+  border: 2px solid #ff6600;
+  border-radius: 24px;
+  padding: 25px;
+  box-shadow:
+    0 0 30px rgba(255, 102, 0, 0.35);
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.online-dot {
+  width: 10px;
+  height: 10px;
+  background: #2cff73;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #2cff73;
+}
+
+.device-info {
+  text-align: center;
+  color: #aaa;
+  font-size: 13px;
+  margin-bottom: 25px;
+}
+
+.biometric-terminal label {
+  display: block;
+  margin-bottom: 8px;
+  color: #ddd;
+}
+
+.biometric-terminal input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #242424;
+  border: 1px solid #444;
+  color: white;
+  border-radius: 10px;
+  padding: 13px;
+  margin-bottom: 15px;
+  outline: none;
+}
+
+.biometric-terminal input:focus {
+  border-color: #ff6600;
+}
+
+.biometric-terminal button {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  background: #ff6600;
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.biometric-terminal button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fingerprint {
+  text-align: center;
+  font-size: 75px;
+  margin: 25px 0;
+}
+
+.fingerprint.scanning {
+  animation: fingerprintPulse 0.8s infinite;
+}
+
+@keyframes fingerprintPulse {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 #ff6600);
+  }
+
+  50% {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 18px #ff6600);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 #ff6600);
+  }
+}
+
+.result {
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.result.success {
+  background: rgba(38, 198, 90, 0.12);
+  border: 1px solid #26c65a;
+}
+
+.result.error {
+  background: rgba(255, 68, 68, 0.12);
+  border: 1px solid #ff4444;
+}
+
+.result h3 {
+  margin-top: 0;
+}

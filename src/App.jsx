@@ -10,6 +10,7 @@ import FeeSummary from './components/feessummary';
 import Activity from './components/Activity';
 import MembershipProtected from './components/membershipProtected';
 import TrainerDashboard from './components/trainer_dhashbord';
+import BiometricSimulator from './components/demobio';
 
 
 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/activity" element={<Activity />}/>
         <Route path="/feessummary" element={<FeeSummary />}/>
         <Route path="/trainer" element={<TrainerDashboard />}/>
+        <Route path="/bio" element={<BiometricSimulator />}/>
         
         
 
