@@ -22,7 +22,10 @@ from django.http import FileResponse, JsonResponse
 import base64
 import random
 from django.utils import timezone
-
+from django.http import HttpResponse
+from django.db.models import Sum, Count
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 class MemberListView(generics.ListAPIView):
     queryset = Member.objects.all()
@@ -1195,3 +1198,175 @@ def verify_otp(request):
         "message": "OTP Verified",
         "member_id": member.id
     })
+
+def export_member_fee_report(request):
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = "Member Fee Report"
+
+    
+    worksheet.merge_cells("A1:F1")
+
+    title_cell = worksheet["A1"]
+    title_cell.value = "Infinity Wellness Hub - Member Fee Report"
+    title_cell.font = Font(
+        bold=True,
+        size=16,
+        color="FFFFFF"
+    )
+    title_cell.fill = PatternFill(
+        fill_type="solid",
+        fgColor="FF6600"
+    )
+    title_cell.alignment = Alignment(
+        horizontal="center",
+        vertical="center"
+    )
+
+    worksheet.row_dimensions[1].height = 30
+
+    
+    headers = [
+        "Member ID",
+        "Member Name",
+        "Total Amount Paid",
+        "Current Membership",
+        "Current Amount",
+        "Total Payments",
+    ]
+
+    header_row = 3
+
+    for column_number, heading in enumerate(headers, start=1):
+        cell = worksheet.cell(
+            row=header_row,
+            column=column_number,
+            value=heading
+        )
+
+        cell.font = Font(
+            bold=True,
+            color="FFFFFF"
+        )
+
+        cell.fill = PatternFill(
+            fill_type="solid",
+            fgColor="222222"
+        )
+
+        cell.alignment = Alignment(
+            horizontal="center",
+            vertical="center"
+        )
+
+    paid_members = Member.objects.all().order_by("name")
+
+    data_row = 4
+
+    for member in paid_members:
+    
+        payments = Payment.objects.filter(
+            member=member,
+            status="Paid"
+        ).order_by("-payment_date")
+
+    
+        if not payments.exists():
+            continue
+
+        summary = payments.aggregate(
+            total_amount=Sum("amount"),
+            total_payments=Count("id")
+        )
+
+        latest_payment = payments.first()
+
+        worksheet.cell(
+            row=data_row,
+            column=1,
+            value=member.user_id
+        )
+
+        worksheet.cell(
+            row=data_row,
+            column=2,
+            value=member.name
+        )
+
+        worksheet.cell(
+            row=data_row,
+            column=3,
+            value=float(summary["total_amount"] or 0)
+        )
+
+        worksheet.cell(
+            row=data_row,
+            column=4,
+            value=latest_payment.plan
+        )
+
+        worksheet.cell(
+            row=data_row,
+            column=5,
+            value=float(latest_payment.amount or 0)
+        )
+
+        worksheet.cell(
+            row=data_row,
+            column=6,
+            value=summary["total_payments"] or 0
+        )
+
+        data_row += 1
+
+    
+    for row in range(4, data_row):
+        worksheet.cell(row=row, column=3).number_format = '₹#,##0.00'
+        worksheet.cell(row=row, column=5).number_format = '₹#,##0.00'
+
+    
+    thin_border = Border(
+        left=Side(style="thin", color="D9D9D9"),
+        right=Side(style="thin", color="D9D9D9"),
+        top=Side(style="thin", color="D9D9D9"),
+        bottom=Side(style="thin", color="D9D9D9"),
+    )
+
+    for row in worksheet.iter_rows(
+        min_row=3,
+        max_row=max(data_row - 1, 3),
+        min_col=1,
+        max_col=6
+    ):
+        for cell in row:
+            cell.border = thin_border
+            cell.alignment = Alignment(
+                horizontal="center",
+                vertical="center"
+            )
+
+    
+    worksheet.column_dimensions["A"].width = 16
+    worksheet.column_dimensions["B"].width = 25
+    worksheet.column_dimensions["C"].width = 22
+    worksheet.column_dimensions["D"].width = 24
+    worksheet.column_dimensions["E"].width = 20
+    worksheet.column_dimensions["F"].width = 18
+
+    # Freeze table heading
+    worksheet.freeze_panes = "A4"
+
+    response = HttpResponse(
+        content_type=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        )
+    )
+
+    response["Content-Disposition"] = (
+        'attachment; filename="member_fee_report.xlsx"'
+    )
+
+    workbook.save(response)
+
+    return response
