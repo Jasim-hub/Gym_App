@@ -1477,13 +1477,15 @@ def biometric_scan(request):
             }
         )
 
-    
+        # -----------------------------
+        # First Scan -> Check In
+        # -----------------------------
         if created:
             action = "check_in"
             message = "Biometric check-in successful."
 
-    
         elif attendance.check_in is None:
+
             attendance.check_in = local_time
             attendance.status = "Present"
             attendance.attendance_method = verification_type
@@ -1501,8 +1503,58 @@ def biometric_scan(request):
             action = "check_in"
             message = "Biometric check-in successful."
 
-        # Second biometric scan: Check-out
+        # -----------------------------
+        # Second Scan -> Check Out
+        # -----------------------------
         elif attendance.check_out is None:
+
+            check_in_datetime = datetime.combine(
+                attendance.date,
+                attendance.check_in
+            )
+
+            current_datetime = timezone.localtime(
+                timezone.now()
+            ).replace(tzinfo=None)
+
+            time_difference = current_datetime - check_in_datetime
+
+            # Check if 30 minutes completed
+            if time_difference < timedelta(minutes=30):
+
+                remaining = timedelta(minutes=30) - time_difference
+
+                remaining_minutes = int(
+                    remaining.total_seconds() // 60
+                )
+
+                return Response(
+                    {
+                        "success": False,
+                        "message": (
+                            "Check-in is already recorded. "
+                            f"Check-out is allowed after "
+                            f"{remaining_minutes} minute(s)."
+                        ),
+                        "action": "check_in_already_done",
+                        "member": {
+                            "user_id": member.user_id,
+                            "name": member.name,
+                        },
+                        "attendance": {
+                            "date": str(attendance.date),
+                            "check_in": format_time(
+                                attendance.check_in
+                            ),
+                            "check_out": None,
+                            "total_hours": attendance.total_hours,
+                            "method": attendance.attendance_method,
+                            "device_id": attendance.device_id,
+                        }
+                    },
+                    status=status.HTTP_200_OK
+                )
+
             attendance.check_out = local_time
             attendance.attendance_method = verification_type
             attendance.device_id = device_id
@@ -1524,8 +1576,11 @@ def biometric_scan(request):
             action = "check_out"
             message = "Biometric check-out successful."
 
-        # Third scan: attendance already completed
+        # -----------------------------
+        # Third Scan
+        # -----------------------------
         else:
+
             return Response(
                 {
                     "success": False,
@@ -1582,6 +1637,7 @@ def biometric_scan(request):
         )
 
     except Exception as error:
+
         print(
             "BIOMETRIC ATTENDANCE ERROR:",
             repr(error)
